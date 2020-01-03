@@ -1,0 +1,888 @@
+============================================================================
+NUMBER FUNCTION
+============================================================================
+----------------------------------
+ABS(-23)
+Result: 23
+
+ABS(-23.6)
+Result: 23.6
+
+ABS(-23.65)
+Result: 23.65
+
+ABS(23.65)
+Result: 23.65
+
+ABS(23.65 * -1)
+Result: 23.65
+
+----------------------------------
+CEIL(32.65)
+Result: 33
+
+CEIL(32.1)
+Result: 33
+
+CEIL(32)
+Result: 32
+
+CEIL(-32.65)
+Result: -32
+---------------------------------
+FLOOR(5.9)
+Result: 5
+
+FLOOR(34.29)
+Result: 34
+
+FLOOR(-5.9)
+Result: -6
+---------------------------------
+ROUND(125.315)
+Result: 125
+
+ROUND(125.315, 0)
+Result: 125
+
+ROUND(125.355, 1)
+Result: 125.3
+
+ROUND(125.315, 2)
+Result: 125.32
+
+ROUND(-125.315, 2)
+Result: -125.32
+--------------------------------
+TRUNC(125.815)
+Result: 125
+
+TRUNC(125.815, 0)
+Result: 125
+
+TRUNC(125.815, 1)
+Result: 125.8
+
+TRUNC(-125.815, 2)
+Result: -125.81
+
+TRUNC(125.815, -1)
+Result: 120
+
+TRUNC(125.815, -2)
+Result: 100
+
+TRUNC(125.815, -3)
+Result: 0
+----------------------------------
+SIGN(-23)
+Result: -1
+
+SIGN(-0.001)
+Result: -1
+
+SIGN(0)
+Result: 0
+
+SIGN(0.001)
+Result: 1
+
+SIGN(23)
+Result: 1
+----------------------------------
+MOD(15, 4)
+Result: 3
+
+MOD(15, 0)
+Result: 15
+
+MOD(11.6, 2)
+Result: 1.6
+
+MOD(11.6, 2.1)
+Result: 1.1
+
+MOD(-15, 4)
+Result: -3
+
+MOD(-15, 0)
+Result: -15
+----------------------------------
+
+
+
+-----------------------------------------------------------------------------
+MOD() and REMAINDER(x)
+-----------------------------------------------------------------------------
+
+select
+  floor(15/4),
+  mod(15,4),          -- 15 - (4*floor(15/4))
+  remainder(15, 4),   -- 15 - (4*round(15/4))
+  round(15/4),
+  15 - (4*round(15/4))
+from 	
+
+
+FLOOR(15/4)  MOD(15,4) REMAINDER(15,4) ROUND(15/4) 15-(4*ROUND(15/4))
+----------- ---------- --------------- ----------- ------------------
+          3          3              -1           4                 -1
+
+
+
+
+============================================================================
+CHARACTER FUNCTION 
+============================================================================
+
+SELECT ASCII('a'), ASCII('A'), ASCII('z'), ASCII('Z'), ASCII(0), ASCII(9)
+FROM dual;
+
+ASCII('A') ASCII('A') ASCII('Z') ASCII('Z') ASCII(0) ASCII(9)
+---------- ---------- ---------- ---------- ---------- ----------
+97 		65	122 		90 	48	57
+
+
+-----------------------------------------------------------------------------
+CHR(10)
+
+SELECT CHR(97), CHR(65), CHR(122), CHR(90), CHR(48), CHR(57) FROM dual;
+
+C C C C C C
+- - - - - -
+a A z Z 0 9
+
+-----------------------------------------------------------------------------
+CONCAT(char1, char2)        -- if number are there then implicit conversion to char
+-----------------------------------------------------------------------------
+SELECT CONCAT(ename, job) FROM emp;
+
+
+-----------------------------------------------------------------------------
+INSTR(x, find_string [, start] [, occurrence])
+-----------------------------------------------------------------------------
+You use INSTR(x, find_string [, start] [, occurrence]) to search for find_string
+in x. INSTR() returns the position at which find_string occurs. You can supply an optional
+start position to begin the search. You can also supply an optional occurrence that indicates
+which occurrence of find_string should be returned.
+
+SELECT 'Modern Science', INSTR('Modern Science', 'Science') FROM dual;
+SELECT 'Modern Science', INSTR('Modern Science', 'e', 1, 2) FROM dual;
+
+
+
+-----------------------------------------------------------------------------
+SUBSTR(x, start[, length])
+-----------------------------------------------------------------------------
+You use SUBSTR(x, start [, length]) to return a substring of x that begins at the position
+specified by start. You can also provide an optional length for the substring.
+The following query uses SUBSTR() to get the 7-character substring starting at position 2
+from the name column of the products table:
+
+
+SELECT SUBSTR(name, 2, 7) FROM products
+
+
+SELECT 'Modern Science', SUBSTR('Modern Science', 2, 7) FROM dual;
+
+
+'MODERNSCIENCE SUBSTR(
+-------------- -------
+Modern Science odern S
+
+
+
+SELECT 'Modern Science', SUBSTR('Modern Science', 2) FROM dual;
+
+'MODERNSCIENCE SUBSTR('MODER
+-------------- -------------
+Modern Science odern Science
+
+
+
+SELECT 'Modern Science', SUBSTR('Modern Science', -2) FROM dual;
+
+SELECT 
+	substr('Modern Science',1, instr('Modern Scienct', ' ' ,1))  First_name, 
+	SUBSTR('Modern Science',instr('Modern Scienct', ' ' ,1)+1 ) Last_name
+FROM dual;
+
+
+-----------------------------------------------------------------------------
+LENGTH(x)
+-----------------------------------------------------------------------------
+select length(ename), length(empno) from emp;
+
+
+-----------------------------------------------------------------------------
+UPPER(X), LOWER(x)
+-----------------------------------------------------------------------------
+
+SELECT UPPER(ename), LOWER(ename) from emp;
+
+
+-----------------------------------------------------------------------------
+LPAD() and RPAD()
+-----------------------------------------------------------------------------
+
+SELECT RPAD(ename, 30, '.'), LPAD(sal, 8, '*+') from emp;
+
+
+-----------------------------------------------------------------------------
+LTRIM(), RTRIM(), and TRIM()
+-----------------------------------------------------------------------------
+SELECT 	LTRIM(' Hello Gail Seymour!'),
+	RTRIM('Hi Doreen Oakley!abc '),
+	TRIM('0' FROM '000Hey Steve Button!00000')
+FROM dual;
+
+
+LTRIM('HELLOGAILSEY RTRIM('HIDOREENOA TRIM('0'FROM'000H
+------------------- ----------------- -----------------
+Hello Gail Seymour! Hi Doreen Oakley! Hey Steve Button!
+
+kkchan kaumar88888
+swayt 888888888888
+sattaveeer 8888888
+
+222kanchan
+222222 kanchan
+-----------------------------------------------------------------------------
+NVL(x,value)
+-----------------------------------------------------------------------------
+
+SELECT customer_id, NVL(phone, 'Unknown Phone Number') FROM customers;
+
+CUSTOMER_ID NVL(PHONE,'UNKNOWNPH
+----------- --------------------
+1 800-555-1211
+2 800-555-1212
+3 800-555-1213
+4 800-555-1214
+5 Unknown Phone Number
+
+
+
+-----------------------------------------------------------------------------
+NVL2(x, value1, value2)  -- returns value1 if x is not null; otherwise value2 is returned.
+-----------------------------------------------------------------------------
+
+SELECT customer_id, NVL2(phone, 'Known', 'Unknown')
+FROM customers;
+
+CUSTOMER_ID NVL2(PH
+----------- -------
+1 Known
+2 Known
+3 Known
+4 Known
+5 Unknown
+
+
+-----------------------------------------------------------------------------
+REPLACE(x, search_string, replace_string)  -- returns value1 if x is not null; otherwise value2 is returned.
+-----------------------------------------------------------------------------
+
+SELECT REPLACE('Modern Science', 'Science', 'Physics') from dual;
+
+Output : Modern Physics
+
+SELECT REPLACE('1111222333444', '2', '3') from dual;
+
+Output : 1111333333444
+
+
+-----------------------------------------------------------------------------
+SOUNDEX() : You use SOUNDEX(x) to get a string containing the phonetic representation of x.
+-----------------------------------------------------------------------------
+
+SELECT last_name
+FROM customers
+WHERE SOUNDEX(last_name) = SOUNDEX('whyte');
+
+
+LAST_NAME
+----------
+White
+
+
+===================================================================================
+General Functions and CASE Expressions.
+===================================================================================
+
+-----------------------------------------------------------------------------
+NVL( string1, replace_with )
+-----------------------------------------------------------------------------
+
+SELECT NVL(table_name, 'not found'), NVL(owner, 'not found') FROM all_tables;
+
+
+
+-----------------------------------------------------------------------------
+CASE and DECODE : 
+-----------------------------------------------------------------------------
+
+select ename
+       , case
+             when sal < 1000                    then 'Grade I'
+             when (sal >=1000 and sal < 2000)   then 'Grade II'
+             when (sal >= 2000 and sal < 3000)  then 'Grade III'
+             else 
+                'Grade IV'
+          end     as sal_grade,
+          
+          	case sal  
+             when  1000 then 'Grade I'
+             when  2000 then 'Grade II'
+             when  3000 then 'Grade III'
+             else 'Grade IV'
+          end sal_grade
+from emp
+   where rownum < 4;
+     
+ 
+ENAME      SAL_GRADE
+---------- ---------
+SMITH      Grade I
+ALLEN      Grade II
+WARD       Grade II
+
+
+
+-----------------------------------------------------------------------------
+CASE and DECODE :2
+-----------------------------------------------------------------------------
+
+
+select e.ename,
+          case
+            when e.ename in ('KING','SMITH','WARD')
+                 then 'Top Bosses'
+            when exists (select 1 from emp emp1
+                         where emp1.mgr = e.empno)
+                 then 'Managers'
+            else
+                'General Employees'
+          end emp_category
+   from emp e
+   where rownum < 5;
+
+
+-----------------------------------------------------------------------------
+CASE and DECODE :3
+-----------------------------------------------------------------------------
+declare
+    grade char(1);
+begin
+    grade := 'b';
+    case grade
+      when 'a' then dbms_output.put_line('excellent');
+      when 'b' then dbms_output.put_line('very good');
+      when 'c' then dbms_output.put_line('good');
+      when 'd' then dbms_output.put_line('fair');
+      when 'f' then dbms_output.put_line('poor');
+      else dbms_output.put_line('no such grade');
+    end case;
+end;
+
+-----------------------------------------------------------------------------
+CASE and DECODE :4
+----------------------------------------------------------------------------
+select decode(null, null, 'NULL', 'NOT NULL') null_test from dual;
+
+select case null
+         when null then 'NULL'
+         else 'NOT NULL'
+       end null_test
+from dual;
+
+
+-----------------------------------------------------------------------------
+CASE and DECODE :5
+----------------------------------------------------------------------------
+select decode(2,1,1,
+               '2','2',
+               '3') t
+from dual; 
+ 
+
+	
+select case 2 when 1 then '1'
+              when '2' then '2'
+              else '3'
+        end
+from dual;
+
+==========================================================================
+Date Function
+==========================================================================
+
+select sysdate, to_char(sysdate, 'mon-dd-yyyy hh24:mi:ss') from dual;
+
+SYSDATE   TO_CHAR(SYSDATE,'MON
+--------- --------------------
+07-MAY-15 may-07-2015 04:30:11
+
+----------------------------------------------------------------------------
+
+SQL> select sysdate, to_date(sysdate, 'mon-dd-yyyy hh24:mi:ss') from dual;
+select sysdate, to_date(sysdate, 'mon-dd-yyyy hh24:mi:ss') from dual
+                        *
+ERROR at line 1:
+ORA-01843: not a valid month
+
+
+----------------------------------------------------------------------------
+
+SQL> select sysdate, to_char(sysdate) from dual;
+
+SYSDATE   TO_CHAR(S
+--------- ---------
+07-MAY-15 07-MAY-15
+
+----------------------------------------------------------------------------
+To_date format sensative
+----------------------------------------------------------------------------
+
+SQL> SELECT TO_CHAR(TO_DATE('05-FEB-1968'), 'MONTH DD, YYYY') FROM dual;
+
+TO_CHAR(TO_DATE('0
+------------------
+FEBRUARY  05, 1968
+
+
+SQL> SELECT TO_CHAR(TO_DATE('02-22-1968'), 'MONTH DD, YYYY') FROM dual;
+SELECT TO_CHAR(TO_DATE('02-22-1968'), 'MONTH DD, YYYY') FROM dual
+                       *
+ERROR at line 1:
+ORA-01843: not a valid month
+
+
+SQL> SELECT TO_CHAR(TO_DATE('FEB-02-1968','MM-DD-YYYY'), 'MONTH DD, YYYY') FROM dual;
+
+TO_CHAR(TO_DATE('F
+------------------
+FEBRUARY  02, 1968
+
+
+----------------------------------------------------------------------------
+To insert datetime in table with and without time
+----------------------------------------------------------------------------
+
+select empno, hiredate, to_char(hiredate,'dd-mm-yyyy HH24:MI:SS') from emp
+
+insert into emp values(1000,'Shiva','Software',
+7829,TO_DATE('05-FEB-1968 19:32:36', 'DD-MON-YYYY HH24:MI:SS'),1000,20,10);
+
+insert into emp values(1001,'Shiva','Software',7829,TO_DATE('05-FEB-1968'),1000,20,10);
+
+rollback;
+
+
+----------------------------------------------------------------------------
+To Find time from date column
+----------------------------------------------------------------------------
+
+SELECT TO_CHAR(TO_DATE('05-FEB-1968 19:32:36','DD-MON-YYYY HH24:MI:SS'), 'HH24:MI:SS') FROM dual;
+
+
+----------------------------------------------------------------------------
+Defaut date format can be set by NLS_DATE_FORMAT;
+----------------------------------------------------------------------------
+
+SQL> select sysdate from dual;
+
+SYSDATE
+---------
+07-MAY-15
+
+SQL> ALTER SESSION SET NLS_DATE_FORMAT = 'MONTH-DD-YYYY';
+
+Session altered.
+
+SQL> select sysdate from dual;
+
+SYSDATE
+-----------------
+MAY      -07-2015
+
+
+----------------------------------------------------------------------------
+YY date Format
+----------------------------------------------------------------------------
+
+SELECT
+	TO_CHAR(TO_DATE('04-JUL-15', 'DD-MON-YY'), 'DD-MON-YYYY'),
+	TO_CHAR(TO_DATE('04-JUL-75', 'DD-MON-YY'), 'DD-MON-YYYY')
+FROM dual;
+
+TO_CHAR(TO_ TO_CHAR(TO_
+----------- -----------
+04-JUL-2015 04-JUL-2075
+As expected, the years 15 and 75
+
+
+
+----------------------------------------------------------------------------
+RR date Format
+----------------------------------------------------------------------------
+
+
+SELECT
+	TO_CHAR(TO_DATE('04-JUL-15', 'DD-MON-RR'), 'DD-MON-YYYY'),
+	TO_CHAR(TO_DATE('04-JUL-75', 'DD-MON-RR'), 'DD-MON-YYYY')
+FROM dual;
+
+TO_CHAR(TO_ TO_CHAR(TO_
+----------- -----------
+04-JUL-2015 04-JUL-1975
+
+
+SELECT
+	TO_CHAR(TO_DATE('04-JUL-15', 'DD-MON-RR'), 'DD-MON-YYYY'),
+	TO_CHAR(TO_DATE('04-JUL-55', 'DD-MON-RR'), 'DD-MON-YYYY')
+FROM dual;
+
+TO_CHAR(TO_ TO_CHAR(TO_
+----------- -----------
+04-JUL-2115 04-JUL-2055
+
+
+
+----------------------------------------------------------------------------
+Datetime Functions :
+----------------------------------------------------------------------------
+
+SELECT ADD_MONTHS('01-JAN-2007', 13) FROM dual;
+
+ADD_MONTH
+---------
+01-FEB-08
+
+
+SELECT ADD_MONTHS('01-JAN-2008', -13) FROM dual;
+
+ADD_MONTH
+---------
+01-DEC-06
+
+
+SELECT ADD_MONTHS(TO_DATE('01-JAN-2007 19:15:26','DD-MON-YYYY HH24:MI:SS'), 2) FROM dual;
+
+ADD_MONTH
+---------
+01-MAR-07
+
+
+SELECT TO_CHAR(ADD_MONTHS(TO_DATE('01-JAN-2007 19:15:26','DD-MON-YYYY HH24:MI:SS'), 2), 'DD-MON-YYYY HH24:MI:SS') FROM dual;
+
+
+TO_CHAR(ADD_MONTHS(T
+--------------------
+01-MAR-2007 19:15:26
+
+
+----------------------------------------------------------------------------
+
+SELECT LAST_DAY('01-JAN-2008') FROM dual;
+
+LAST_DAY(
+---------
+31-JAN-08
+
+
+----------------------------------------------------------------------------
+
+SELECT MONTHS_BETWEEN('25-MAY-2008', '15-JAN-2008') FROM dual;
+
+MONTHS_BETWEEN('25-MAY-2008','15-JAN-2008')
+-------------------------------------------
+4.32258065
+
+
+----------------------------------------------------------------------------
+
+SELECT MONTHS_BETWEEN('15-JAN-2008', '25-MAY-2008') FROM dual;
+
+MONTHS_BETWEEN('15-JAN-2008','25-MAY-2008')
+-------------------------------------------
+-4.3225806
+
+
+----------------------------------------------------------------------------
+
+
+SELECT NEXT_DAY('01-JAN-2008', 'SATURDAY') FROM dual;
+
+NEXT_DAY(
+---------
+05-JAN-08
+
+----------------------------------------------------------------------------
+
+SELECT ROUND(TO_DATE('25-OCT-2008'), 'YYYY') FROM dual;
+
+ROUND(TO_
+---------
+01-JAN-09
+
+SELECT ROUND(TO_DATE('25-MAY-2008'), 'MM') FROM dual;
+
+ROUND(TO_
+---------
+01-JUN-08
+
+
+SELECT TO_CHAR(ROUND(TO_DATE('25-MAY-2008 19:45:26','DD-MON-YYYY HH24:MI:SS'), 'HH24'), 'DD-MON-YYYY HH24:MI:SS') FROM dual;
+
+TO_CHAR(ROUND(TO_DAT
+--------------------
+25-MAY-2008 20:00:00
+
+
+----------------------------------------------------------------------------
+
+SELECT TRUNC(TO_DATE('25-MAY-2008'), 'YYYY') FROM dual;
+
+TRUNC(TO_
+---------
+01-JAN-08
+
+
+SELECT TRUNC(TO_DATE('25-MAY-2008'), 'MM') FROM dual;
+
+TRUNC(TO_
+---------
+01-MAY-08
+
+SELECT TO_CHAR(TRUNC(TO_DATE('25-MAY-2008 19:45:26', 'DD-MON-YYYY HH24:MI:SS'), 'HH24'), 'DD-MON-YYYY HH24:MI:SS') FROM dual;
+
+TO_CHAR(TRUNC(TO_DAT
+--------------------
+25-MAY-2008 19:00:00
+
+
+
+
+
+============================================================================
+Time Zone
+============================================================================
+The database time zone is controlled using the TIME_ZONE database parameter. Your database
+   administrator can change the setting of the TIME_ZONE parameter in the database’s init.ora or
+spfile.ora file, or by using ALTER DATABASE SET TIME_ZONE = offset | region (e.
+g., ALTER DATABASE SET TIME_ZONE = '-8:00' or ALTER DATABASE SET TIME_
+ZONE = 'PST').
+You can get the database time zone using the DBTIMEZONE function
+
+SELECT DBTIMEZONE FROM dual;
+
+DBTIME
+------
++00:00
+
+As you can see, +00:00 is returned. This means my database uses the time zone set in the
+operating system, which is set to PST on my computer.
+
+
+----------------------------------------------------------------------------
+Session Time Zone
+----------------------------------------------------------------------------
+
+ALTER SESSION SET TIME_ZONE = 'PST'
+
+SELECT SESSIONTIMEZONE FROM dual;
+
+SESSIONTIMEZONE
+---------------------
++05:30
+
+
+----------------------------------------------------------------------------
+CURRENT_DATE  AND SYSDATE
+----------------------------------------------------------------------------
+
+SELECT CURRENT_DATE FROM DUAL;
+
+CURRENT_D
+---------
+08-MAY-15
+
+SQL> SELECT SYSDATE FROM DUAL;
+
+SYSDATE
+---------
+08-MAY-15
+
+
+
+----------------------------------------------------------------------------
+CURRENT_DATE  AND SYSDATE
+----------------------------------------------------------------------------
+SQL> SELECT TZ_OFFSET('PST') FROM DUAL;
+
+TZ_OFFS
+-------
+-07:00
+
+SQL> SELECT TZ_OFFSET('EST') FROM DUAL;
+
+TZ_OFFS
+-------
+-05:00
+
+SQL> SELECT TZ_OFFSET('UTC') FROM DUAL;
+
+TZ_OFFS
+-------
++00:00
+
+----------------------------------------------------------------------------
+Converting a Datetime from One Time Zone to Another
+----------------------------------------------------------------------------
+
+SELECT TO_CHAR(NEW_TIME(TO_DATE('25-MAY-2008 19:45','DD-MON-YYYY HH24:MI'), 'PST', 'EST'), 'DD-MON-YYYY HH24:MI') FROM dual; 
+
+TO_CHAR(NEW_TIME(
+-----------------
+25-MAY-2008 22:45
+
+
+----------------------------------------------------------------------------
+Timezone : We show it earlier
+----------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------
+Timezone functions
+----------------------------------------------------------------------------
+
+SELECT CURRENT_TIMESTAMP, LOCALTIMESTAMP, SYSTIMESTAMP FROM dual;
+
+
+
+----------------------------------------------------------------------------
+EXTRACT()
+----------------------------------------------------------------------------
+
+EXTRACT() extracts and returns the year, month, day, hour, minute, second, or time zone from
+x; x may be a timestamp or a DATE. The following query uses EXTRACT() to get the year,
+month, and day from a DATE returned by TO_DATE():
+
+SELECT 
+	EXTRACT(YEAR FROM TO_DATE('01-JAN-2008 19:15:26','DD-MON-YYYY HH24:MI:SS'))  AS YEAR,
+	EXTRACT(MONTH FROM TO_DATE('01-JAN-2008 19:15:26','DD-MON-YYYY HH24:MI:SS')) AS MONTH,
+	EXTRACT(DAY FROM TO_DATE('01-JAN-2008 19:15:26','DD-MON-YYYY HH24:MI:SS'))   AS DAY
+FROM dual;
+
+YEAR MONTH DAY
+---------- ---------- ----------
+2008 1 1
+
+
+
+SELECT
+      EXTRACT(TIMEZONE_HOUR FROM TO_TIMESTAMP_TZ('01-JAN-2008 19:15:26 -7:15', 'DD-MON-YYYY HH24:MI:SS TZH:TZM'))   AS TZH,
+      EXTRACT(TIMEZONE_MINUTE FROM TO_TIMESTAMP_TZ('01-JAN-2008 19:15:26 -7:15', 'DD-MON-YYYY HH24:MI:SS TZH:TZM')) AS TZM,
+      EXTRACT(TIMEZONE_REGION FROM TO_TIMESTAMP_TZ('01-JAN-2008 19:15:26 PST', 'DD-MON-YYYY HH24:MI:SS TZR'))       AS TZR,
+      EXTRACT(TIMEZONE_ABBR FROM TO_TIMESTAMP_TZ('01-JAN-2008 19:15:26 PST', 'DD-MON-YYYY HH24:MI:SS TZR'))         AS TZA
+FROM dual;
+
+TZH TZM TZR TZA
+---------- ---------- ----------- ----------
+-7 -15 PST PST
+
+
+
+----------------------------------------------------------------------------
+FROM_TZ()
+----------------------------------------------------------------------------
+
+FROM_TZ(x, time_zone) converts the TIMESTAMP x to the time zone specified by time_
+zone and returns a TIMESTAMP WITH TIMEZONE; time_zone must be specified as a string
+of the form +|- HH:MI. The function basically merges x and time_zone into one value.
+
+SELECT FROM_TZ(TIMESTAMP '2008-05-13 07:15:31.1234', '-7:00') FROM dual;
+
+FROM_TZ(TIMESTAMP'2008-05-1307:15:31.1234','-7:00')
+---------------------------------------------------
+13-MAY-08 07.15.31.123400000 AM -07:00
+
+
+----------------------------------------------------------------------------
+Converting a String to a TIMESTAMP WITH LOCAL TIME ZONE
+----------------------------------------------------------------------------
+
+SELECT CAST('13-JUN-08' AS TIMESTAMP WITH LOCAL TIME ZONE)  FROM dual;
+
+CAST('13-JUN-08'ASTIMESTAMPWITHLOCALTIMEZONE)
+---------------------------------------------
+13-JUN-08 12.00.00.000000 AM
+
+
+
+
+SELECT CAST(TO_TIMESTAMP_TZ('2008-05-13 07:15:31.1234 PST','YYYY-MM-DD HH24:MI:SS.FF TZR') AS TIMESTAMP WITH LOCAL TIME ZONE) 
+FROM dual;
+
+
+CAST(TO_TIMESTAMP_TZ('2008-05-1307:15:31.1234PST','YYYY-MM-DDHH24:MI:SS.FF
+--------------------------------------------------------------------------
+13-MAY-08 06.15.31.123400 AM 
+
+
+SELECT CAST(TO_TIMESTAMP_TZ('2008-05-13 07:15:31.1234 EST','YYYY-MM-DD HH24:MI:SS.FF TZR') AS TIMESTAMP WITH LOCAL TIME ZONE)
+FROM dual;
+
+CAST(TO_TIMESTAMP_TZ('2008-05-1307:15:31.1234EST','YYYY-MM-DDHH24:MI:SS.FF
+--------------------------------------------------------------------------
+13-MAY-08 04.15.31.123400 AM
+
+
+==================================================================================================
+
+
+============================================================================
+TimeStamp Demo
+============================================================================
+
+DROP TABLE purchases_with_timestamp ;
+
+CREATE TABLE purchases_with_timestamp (
+product_id INTEGER,
+customer_id INTEGER ,
+made_on TIMESTAMP(4)
+);
+
+
+INSERT INTO purchases_with_timestamp (product_id, customer_id, made_on) 
+VALUES (1, 1, TIMESTAMP '2005-05-13 07:15:31.1234'
+);
+
+
+DROP TABLE purchases_timestamp_with_tz ;
+
+CREATE TABLE purchases_timestamp_with_tz (
+product_id INTEGER,
+customer_id INTEGER,
+made_on TIMESTAMP(4) WITH TIME ZONE
+);
+
+INSERT INTO purchases_timestamp_with_tz (product_id, customer_id, made_on) 
+VALUES (1, 1, TIMESTAMP '2005-05-13 07:15:31.1234 -07:00');
+
+INSERT INTO purchases_timestamp_with_tz (product_id, customer_id, made_on)
+ VALUES (1, 2, TIMESTAMP '2005-05-13 07:15:31.1234 PST');
+
+DROP TABLE purchases_with_local_tz;
+
+CREATE TABLE purchases_with_local_tz (
+product_id INTEGER ,
+customer_id INTEGER ,
+made_on TIMESTAMP(4) WITH LOCAL TIME ZONE
+);
+
+INSERT INTO purchases_with_local_tz (product_id, customer_id, made_on) 
+VALUES (1, 1, TIMESTAMP '2005-05-13 07:15:30 EST');
+

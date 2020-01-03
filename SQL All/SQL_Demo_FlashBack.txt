@@ -1,0 +1,59 @@
+If you mistakenly commit changes and you want to view rows as they originally were, you can
+use a query flashback. You can then use the results of a query flashback to manually change rows
+back to their original values if you need to.
+
+Query flashbacks can be based on a datetime or system change number (SCN). The database
+uses SCNs to track changes made to data, and you can use them to flash back to a particular SCN
+in the database.
+-------------------------------------------------------------------------------------------
+1.Granting the Privilege for Using Flashbacks
+-------------------------------------------------------------------------------------------
+SQL> connect as sysdba
+Enter user-name: sys
+Enter password:
+Connected.
+
+SQL> GRANT EXECUTE ON SYS.DBMS_FLASHBACK TO scott;
+
+Grant succeeded.
+
+SQL> Connect scott/scott;
+
+SQL> select * from dept;
+
+
+SQL> UPDATE dept SET LOC = 'BANG' WHERE DEPTNO = 40;   -- ORG BOSTON
+
+SQL> COMMIT;
+
+SQL> EXECUTE DBMS_FLASHBACK.ENABLE_AT_TIME(SYSDATE – 1 / 1440);
+
+
+-------------------------------------------------------------------------------------------
+2 .System Change Number Query Flashbacks
+-------------------------------------------------------------------------------------------
+
+VARIABLE current_scn NUMBER
+
+EXECUTE :current_scn := DBMS_FLASHBACK.GET_SYSTEM_CHANGE_NUMBER();
+
+EXECUTE DBMS_FLASHBACK.DISABLE();
+
+EXECUTE DBMS_FLASHBACK.ENABLE_AT_SYSTEM_CHANGE_NUMBER(:current_scn);
+
+==========================================================================================
+Flashback Data Archives
+==========================================================================================
+
+Flashback Data Archives
+
+
+SELECT product_id, name, price FROM TABLE1
+AS OF TIMESTAMP (SYSTIMESTAMP - INTERVAL '5' MINUTE);
+
+
+SELECT product_id, name, price
+FROM TABLE1
+AS OF TIMESTAMP TO_TIMESTAMP('2007-08-12 13:05:00', 'YYYY-MM-DD HH24:MI:SS');
+
+

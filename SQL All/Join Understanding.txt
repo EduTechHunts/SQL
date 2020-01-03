@@ -1,0 +1,430 @@
+------------------------------------------------SET UP START --------------------------
+DROP TABLE FIRST;
+
+CREATE TABLE  FIRST
+(
+	COL1 NUMBER
+);
+
+
+INSERT INTO FIRST VALUES(1);
+
+INSERT INTO FIRST VALUES(2);
+
+INSERT INTO FIRST VALUES(3);
+
+INSERT INTO FIRST VALUES(4);
+
+INSERT INTO FIRST VALUES(NULL);
+
+INSERT INTO FIRST VALUES(NULL);
+
+DROP TABLE SEC;
+
+CREATE TABLE SEC
+(
+	COL1 NUMBER
+);
+
+
+INSERT INTO SEC VALUES(1);
+
+INSERT INTO SEC VALUES(2);
+
+INSERT INTO SEC VALUES(3);
+
+INSERT INTO SEC VALUES(4);
+
+INSERT INTO SEC VALUES(NULL);
+
+INSERT INTO SEC VALUES(NULL);
+
+INSERT INTO SEC VALUES(5);
+
+
+commit;
+
+SQL>  SELECT * FROM FIRST;
+
+      COL1
+----------
+         1
+         2
+         3
+         4
+NULL
+NULL
+
+6 rows selected.
+-----------------------------------------------------
+SQL> SELECT * FROM SEC;
+
+      COL1
+----------
+         1
+         2
+         3
+         4
+         5
+NULL
+NULL
+
+7 rows selected.
+
+------------------------------------------------SET UP END --------------------------
+
+-- EXAMPLE DEMONSTRATION:
+
+1. EQUI  JOIN
+2. LEFT  OUTER JOIN
+3. RIGHT OUTER JOIN
+4. NON   EQUI JOIN
+5. SELF  JOIN
+
+------------------------equi join-----------------------------
+SELECT
+   NVL(A.COL1,0),
+   NVL(B.COL1,0)
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1 = B.COL1
+/
+      COL1       COL1
+---------- ----------
+         1          1
+         2          2
+         3          3
+         4          4
+
+------------------------LEFT OUTER JOIN-----------------------------
+SELECT
+   NVL(A.COL1,0),
+   NVL(B.COL1,0)
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1 = B.COL1(+)
+
+/
+        COL1       COL1
+---------- ----------
+         1          1
+         2          2
+         3          3
+         4          4
+NULL       NULL
+NULL       NULL
+
+
+
+------------------------RIGHT OUTER JOIN-----------------------------
+
+SELECT
+   A.COL1,
+   B.COL1
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1(+) = B.COL1
+
+/
+        COL1       COL1
+---------- ----------
+         1          1
+         2          2
+         3          3
+         4          4
+NULL       NULL
+NULL       NULL
+NULL		    5
+
+------------------------FULL OUTER JOIN -----------------------------
+
+SELECT
+   NVL(A.COL1,0),
+   NVL(B.COL1,0)
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1 = B.COL1(+)
+UNION
+SELECT
+   NVL(A.COL1,0),
+   NVL(B.COL1,0)
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1(+) = B.COL1;
+
+
+SELECT
+   A.COL1,
+   B.COL1
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1 = B.COL1(+)
+UNION
+SELECT
+   A.COL1,
+   B.COL1
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1(+) = B.COL1;
+
+
+-- OR IN ANSI STANDARD
+
+SELECT DISTINCT C.* FROM (
+SELECT
+   NVL(A.COL1,0),
+   NVL(B.COL1,0)
+FROM
+   FIRST A
+FULL OUTER JOIN
+   SEC   B
+ON
+   A.COL1 = B.COL1
+) C
+
+
+
+SELECT DISTINCT C.* FROM (
+SELECT
+   A.COL1 acol,
+   B.COL1 bcol
+FROM
+   FIRST A
+FULL OUTER JOIN
+   SEC   B
+ON
+   A.COL1 = B.COL1
+) C
+
+------------------------NON EQUI JOIN 01 -----------------------------
+
+SELECT
+   A.COL1,
+   B.COL1
+FROM
+   FIRST A,
+   SEC   B
+WHERE
+   A.COL1 != B.COL1
+
+/
+         COL1       COL1
+---------- ----------
+         1          2
+         1          3
+         1          4
+         1          5
+         2          1
+         2          3
+         2          4
+         2          5
+         3          1
+         3          2
+         3          4
+         3          5
+         4          1
+         4          2
+         4          3
+         4          5
+
+
+------------------------NON EQUI JOIN 02 -----------------------------
+
+ SELECT
+    A.COL1,
+    B.COL1
+ FROM
+    FIRST A,
+    SEC   B
+ WHERE
+    A.COL1 BETWEEN 1 AND 3;
+
+      COL1       COL1
+---------- ----------
+         1          1
+         1          2
+         1          3
+         1          4
+         1          5
+         1 NULL
+         1 NULL
+         2          1
+         2          2
+         2          3
+         2          4
+	 2          5
+         2 NULL
+         2 NULL
+         3          1
+         3          2
+         3          3
+         3          4
+         3          5
+         3 NULL
+         3 NULL
+
+
+------------------------NON EQUI JOIN 03 -----------------------------
+
+  SELECT
+     A.COL1,
+     B.COL1
+  FROM
+     FIRST A,
+     SEC   B
+  WHERE
+     A.COL1 IS NULL;
+
+      COL1       COL1
+---------- ----------
+NULL                1
+NULL                2
+NULL                3
+NULL                4
+NULL                5
+NULL       NULL
+NULL       NULL
+NULL                1
+NULL                2
+NULL                3
+NULL                4
+NULL                5
+NULL       NULL
+NULL       NULL
+
+
+
+------------------------NON EQUI JOIN 04 -----------------------------
+
+ SELECT
+    A.COL1,
+    B.COL1
+ FROM
+    FIRST A,
+    SEC   B
+ WHERE
+    B.COL1 IS NULL
+
+       COL1       COL1
+---------- ----------
+         1 NULL
+         2 NULL
+         3 NULL
+         4 NULL
+NULL       NULL
+NULL       NULL
+         1 NULL
+         2 NULL
+         3 NULL
+         4 NULL
+NULL       NULL
+NULL       NULL
+
+
+------------------------SELF JOIN TABLE STRUCTURE AND DATA START -----------------------------
+SELECT * FROM FIRST
+      COL1       COL2
+---------- ----------
+         1 NULL
+         2 NULL
+         3 NULL
+         4 NULL
+NULL       NULL
+NULL       NULL
+NULL       NULL
+NULL                1
+NULL                2
+NULL                3
+------------------------SELF JOIN TABLE STRUCTURE AND DATA END -----------------------------
+
+------------------------SELF JOIN 01 -----------------------------
+ SELECT
+    A.COL1, B.COL2
+ FROM
+    FIRST A,
+    FIRST B
+ WHERE
+    A.COL1 = B.COL2
+ /
+
+  COL1       COL2
+------ ----------
+     1          1
+     2          2
+     3          3
+
+------------------------SELF JOIN 01 -----------------------------
+ SELECT
+    A.COL1, B.COL2
+ FROM
+    FIRST A,
+    FIRST B
+ WHERE
+    A.COL1 = B.COL1
+
+      COL1       COL2
+---------- ----------
+         1 NULL
+         2 NULL
+         3 NULL
+         4 NULL
+
+
+-------------------------------------- DROP TABLE--------------------------------
+DROP TABLE FIRST;
+DROP TABLE END;
+-------------------------------------- THANK YOU --------------------------------
+
+----------------------------------------------------------------------
+Understanding of Correlated query
+----------------------------------------------------------------------
+
+
+select deptno, ename, sal from emp a where sal > (select avg(sal) from emp b where a.deptno = b.deptno ) order by 1;
+
+DEPTNO ENAME             SAL
+------ ---------- ----------
+    10 KING             5000
+    20 JONES            2975
+    20 FORD             3000
+    20 SCOTT            3000
+    30 ALLEN            1600
+    30 BLAKE            2850
+
+Note : We can write above query as query written below as well
+
+SELECT 
+	a.deptno,
+	a.ename , 
+	a.sal 
+FROM 
+	emp a ,
+ 	(SELECT b.deptno, avg(b.sal) avgsal from emp b group by b.deptno ) c
+WHERE
+    	a.deptno = c.deptno
+AND 	a.sal > c.avgsal
+ORDER BY 1
+ /
+
+DEPTNO ENAME             SAL
+------ ---------- ----------
+    10 KING             5000
+    20 JONES            2975
+    20 SCOTT            3000
+    20 FORD             3000
+    30 ALLEN            1600
+    30 BLAKE            2850

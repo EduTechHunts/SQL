@@ -1,0 +1,130 @@
+==============================================================
+Example - Using VALUES keyword
+==============================================================
+
+
+CREATE TABLE contacts
+( 
+  contact_id  number(10)    not null,
+  last_name   varchar2(50)  not null,
+  first_name  varchar2(50)  not null,
+  address     varchar2(50),
+  city        varchar2(50),
+  state       varchar2(20),
+  zip_code    varchar2(10),
+
+  CONSTRAINT contacts_pk PRIMARY KEY (contact_id)
+);
+
+
+INSERT INTO contacts
+(contact_id, last_name, first_name, address)
+VALUES
+(1000, 'Smith', 'Jane', '10 Somewhere St.');
+
+
+==============================================================
+Example - Using SELECT statement
+==============================================================
+
+INSERT INTO suppliers
+(supplier_id, supplier_name)
+SELECT account_no, name
+FROM customers
+WHERE customer_id > 5000;
+
+
+==============================================================
+Example - INSERT ALL 
+==============================================================
+
+INSERT ALL
+  INTO contacts (contact_id, last_name, first_name) VALUES (1000, 'Smith', 'Jane')
+  INTO contacts (contact_id, last_name, first_name) VALUES (1001, 'Smith1', 'Jane1')
+  INTO contacts (contact_id, last_name, first_name) VALUES (1002, 'Smith1', 'Jane1')
+select * from dual;
+
+
+
+==============================================================
+Example - Insert into Multiple Tables
+==============================================================
+
+INSERT INTO suppliers (supplier_id, supplier_name) VALUES (1000, 'IBM');
+
+INSERT INTO suppliers (supplier_id, supplier_name) VALUES (2000, 'Microsoft');
+
+INSERT INTO customers (customer_id, customer_name, city) VALUES (999999, 'Anderson Construction', 'New York');
+
+==============================================================
+Example - INSERT INTO
+==============================================================
+
+INSERT INTO contacts
+SELECT *
+FROM customers
+WHERE state = 'Florida';
+
+
+==============================================================
+DML : UPDATE 
+==============================================================
+
+UPDATE customers
+SET last_name = 'Anderson'
+WHERE customer_id = 5000;
+
+--------------------------------------------------------------
+
+UPDATE customers
+SET state = 'California',
+    customer_rep = 32
+WHERE customer_id > 100;
+
+--------------------------------------------------------------
+
+UPDATE customers
+SET c_details = (SELECT contract_date
+                 FROM suppliers
+                 WHERE suppliers.supplier_name = customers.customer_name)
+WHERE customer_id < 1000;
+
+--------------------------------------------------------------
+
+UPDATE suppliers
+SET supplier_name = (SELECT customers.customer_name
+                     FROM customers
+                     WHERE customers.customer_id = suppliers.supplier_id)
+WHERE EXISTS (SELECT customers.customer_name
+              FROM customers
+              WHERE customers.customer_id = suppliers.supplier_id);
+
+
+
+==============================================================
+DML : DELETE
+==============================================================
+
+DELETE FROM customers
+WHERE last_name = 'Anderson'
+AND customer_id > 25;
+
+--------------------
+
+DELETE FROM suppliers 
+WHERE EXISTS ( SELECT customers.customer_name FROM customers WHERE         
+               customers.customer_id = suppliers.supplier_id AND customer_id > 25 );
+
+
+
+
+
+AAAR5kAA      FAAAA          DPABD
+block               rowin block   datfile      
+
+
+
+
+
+
+

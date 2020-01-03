@@ -1,0 +1,308 @@
+Create Table Demo
+================================================================
+CREATE TABLE suppliers
+( 
+  supplier_id   number(10)   NOT NULL,
+  supplier_name varchar2(50) NOT NULL,
+  suppl_date    date        ,
+  address       varchar2(50),
+  city          varchar2(50),
+  state         varchar2(25),
+  zip_code      varchar2(10)
+);
+ 
+-----------------------------------------------------------------
+How oracle create the create command by its own.
+-----------------------------------------------------------------
+
+CREATE TABLE "SCOTT"."SUPPLIERS" 
+   (	
+	"SUPPLIER_ID" NUMBER(10,0) NOT NULL ENABLE, 
+	"SUPPLIER_NAME" VARCHAR2(50 BYTE) NOT NULL ENABLE, 
+	"SUPPL_DATE" DATE, 
+	"ADDRESS" VARCHAR2(50 BYTE), 
+	"CITY" VARCHAR2(50 BYTE), 
+	"STATE" VARCHAR2(25 BYTE), 
+	"ZIP_CODE" VARCHAR2(10 BYTE)
+   ) 
+	SEGMENT CREATION DEFERRED 
+	  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 COMPRESS NOLOGGING
+	  TABLESPACE "USERS" ;
+
+
+-----------------------------------------------------------------
+If you have constraints then it will looks like this
+-----------------------------------------------------------------
+  CREATE TABLE "SCOTT"."EMP" 
+   (	"EMPNO" NUMBER(4,0), 
+	"ENAME" VARCHAR2(10 BYTE), 
+	"JOB" VARCHAR2(9 BYTE), 
+	"MGR" NUMBER(4,0), 
+	"HIREDATE" DATE, 
+	"SAL" NUMBER(7,2), 
+	"COMM" NUMBER(7,2), 
+	"DEPTNO" NUMBER(2,0), 
+	 CONSTRAINT "PK_EMP" PRIMARY KEY ("EMPNO")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "USERS"  ENABLE, 
+	 CONSTRAINT "FK_DEPTNO" FOREIGN KEY ("DEPTNO")
+	  REFERENCES "SCOTT"."DEPT" ("DEPTNO") ENABLE
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "USERS" ;
+
+-----------------------------------------------------------------
+
+================================================================
+Alter table : Add column in table
+================================================================
+
+CREATE TABLE employees
+( employee_number number(10)   not null,
+  employee_name   varchar2(50) not null,
+  department_id   number(10),
+  CONSTRAINT employees_pk PRIMARY KEY (employee_number)
+);
+
+ALTER TABLE employees ADD bonus number(6);
+
+
+-----------------------------------------------------------------
+Alter table : Add multiple columns in table
+-----------------------------------------------------------------
+
+CREATE TABLE customers
+( customer_id number(10) not null,
+  customer_name varchar2(50) not null,
+  address varchar2(50),
+  city varchar2(50),
+  state varchar2(25),
+  zip_code varchar2(10),
+  CONSTRAINT customers_pk PRIMARY KEY (customer_id)
+);
+
+ALTER TABLE customers
+  ADD (contact_name varchar2(50),
+       last_contacted date);
+
+-----------------------------------------------------------------
+Alter table : Modify column in table
+-----------------------------------------------------------------
+
+CREATE TABLE employees
+( employee_number number(10) not null,
+  employee_name >varchar2(50) not null,
+  department_id number(10),
+  CONSTRAINT employees_pk PRIMARY KEY (employee_number)
+);
+
+ALTER TABLE employees MODIFY employee_name varchar2(75);
+
+
+
+-----------------------------------------------------------------
+Alter table : Modify Multiple columns in table
+-----------------------------------------------------------------
+
+CREATE TABLE customers
+( customer_id number(10) not null,
+  customer_name varchar2(50),
+  address varchar2(50),
+  city varchar2(50),
+  state varchar2(25),
+  zip_code varchar2(10),
+  CONSTRAINT customers_pk PRIMARY KEY (customer_id)
+);
+
+ALTER TABLE customers
+  MODIFY (customer_name varchar2(100) not null,
+          city varchar2(75));
+
+
+-----------------------------------------------------------------
+Alter table :Drop a column in a table
+-----------------------------------------------------------------
+
+ALTER TABLE customers
+  DROP COLUMN customer_name;
+
+
+-----------------------------------------------------------------
+Alter table :Rename a table
+-----------------------------------------------------------------
+
+
+ALTER TABLE customers
+  RENAME TO contacts;
+
+================================================================================================================================
+                                                 ORACLE CONSTRAINTS
+================================================================================================================================
+
+-----------------------------------------------------------------
+Primary key :By create statement
+-----------------------------------------------------------------
+
+CREATE TABLE supplier
+(
+  supplier_id numeric(10) primary key,  -- primary key name will be system defined: 
+  supplier_name varchar2(50) not null,
+  contact_name varchar2(50)
+);
+
+CREATE TABLE supplier
+(
+  supplier_id numeric(10) not null,
+  supplier_name varchar2(50) not null,
+  contact_name varchar2(50),
+
+  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id)
+);
+
+
+
+CREATE TABLE supplier
+(
+  supplier_id numeric(10) not null,
+  supplier_name varchar2(50) not null,
+  contact_name varchar2(50),
+  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id, supplier_name)
+);
+
+
+-----------------------------------------------------------------
+Primary key :By Alter statement
+-----------------------------------------------------------------
+CREATE TABLE supplier
+(
+  supplier_id numeric(10) not null,
+  supplier_name varchar2(50) not null,
+  contact_name varchar2(50)
+);
+
+
+
+ALTER TABLE supplier ADD CONSTRAINT supplier_pk PRIMARY KEY (supplier_id);
+
+ALTER TABLE supplier
+ADD CONSTRAINT supplier_pk PRIMARY KEY (supplier_id, supplier_name);
+
+
+-----------------------------------------------------------------
+Primary key - Alter, enable , disable and drop
+-----------------------------------------------------------------
+
+ALTER TABLE supplier
+DROP CONSTRAINT supplier_pk;
+
+ALTER TABLE supplier
+ENABLE CONSTRAINT supplier_pk;
+
+
+ALTER TABLE table_name
+DISABLE CONSTRAINT constraint_name;
+
+==============================================================
+Example : Foreign Keys
+==============================================================
+-----------------------------------------------------------------
+Foreign key - By create
+-----------------------------------------------------------------
+
+DROP TABLE supplier;
+
+CREATE TABLE supplier
+( supplier_id numeric(10) not null,
+  supplier_name varchar2(50) not null,
+  contact_name varchar2(50),
+  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id)
+);
+
+CREATE TABLE products
+( product_id numeric(10) not null,
+  supplier_id numeric(10) not null,
+  CONSTRAINT fk_supplier    FOREIGN KEY (supplier_id)    REFERENCES supplier(supplier_id)
+ ON DELETE CASCADE
+-- ON DELETE SET NULL
+    
+);
+
+-----------------------------------------------------------------
+Foreign key - By Alter
+-----------------------------------------------------------------
+
+ALTER TABLE products
+ADD CONSTRAINT fk_supplier
+  FOREIGN KEY (supplier_id)
+  REFERENCES supplier(supplier_id);
+ -- ON DELETE CASCADE
+ -- ON DELETE SET NULL
+
+-----------------------------------------------------------------
+Foreign key - Alter, enable , disable and drop
+-----------------------------------------------------------------
+
+ALTER TABLE table_name
+DROP CONSTRAINT constraint_name;
+
+ALTER TABLE table_name
+DISABLE CONSTRAINT constraint_name;
+
+
+ALTER TABLE table_name
+ENABLE CONSTRAINT constraint_name;
+
+
+==============================================================
+Example : UNIQUE Keys
+==============================================================
+
+CREATE TABLE supplier
+( supplier_id numeric(10) NOT NULL,
+  supplier_name varchar2(50) NOT NULL,
+  contact_name varchar2(50),
+  CONSTRAINT supplier_unique UNIQUE (supplier_id, supplier_name)
+);
+
+
+ALTER TABLE supplier
+ADD CONSTRAINT supplier_unique UNIQUE (supplier_id);
+
+
+
+
+-----------------------------------------------------------------
+Foreign key - Alter, enable , disable and drop
+-----------------------------------------------------------------
+
+ALTER TABLE supplier
+DROP CONSTRAINT supplier_unique ;
+
+ALTER TABLE supplier
+DISABLE CONSTRAINT supplier_unique ;
+
+
+ALTER TABLE supplier
+ENABLE CONSTRAINT supplier_unique ;
+
+
+
+================================================================
+		check contraint
+---------------------------------------------------------------
+                Check Contraints by create
+---------------------------------------------------------------
+
+CREATE TABLE suppliers
+(
+  supplier_id numeric(4),
+  supplier_name varchar2(50),
+  CONSTRAINT check_supplier_id  CHECK (supplier_id BETWEEN 100 and 9999)
+);
+
+
+

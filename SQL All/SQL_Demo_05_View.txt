@@ -1,0 +1,396 @@
+============================================================================================================================
+Views : Examples
+============================================================================================================================
+
+============================================================================================================================
+Example of to create, replace, and drop views using SQL commands. 
+============================================================================================================================
+Creating Views 
+
+Suppose we have EMP and DEPT table. To see the empno, ename, sal, deptno, department name and 
+location we have to give a join query like this.
+ 
+select 
+	e.empno,
+	e.ename,
+	e.sal,
+	e.deptno,
+	d.dname,
+	d.loc
+From 
+	emp  e, 
+	dept d 
+where 
+	e.deptno=d.deptno;
+ 
+Instead of giving this join query again and again, we can create a view on these table by using a CREATE VIEW command given below
+ 
+create view emp_det as
+select 
+	e.empno,
+	e.ename,
+	e.sal,
+	e.deptno,
+	d.dname,
+	d.loc
+From 
+	emp e, 
+	dept d 
+where 
+	e.deptno=d.deptno;
+
+
+select * from emp_det;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation : WITH CHECK OPTION
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE VIEW accounts_staff AS 
+SELECT 
+	Empno, 
+	Ename, 
+	Deptno,
+	sal 
+FROM 
+	Emp     
+WHERE 
+	Deptno = 10  
+   
+WITH CHECK OPTION CONSTRAINT ica_Accounts_cnst;
+
+Furthermore, WITH CHECK OPTION creates the view with the constraint that INSERT and UPDATE statements 
+issued against the view are not allowed to create or result in rows that the view cannot select. 
+
+Considering the example above, the following INSERT statement successfully inserts a row 
+into the EMP table through the ACCOUNTS_STAFF view: 
+
+
+INSERT INTO Accounts_staff VALUES (110, 'SHIVA', 10); 
+
+
+However, the following INSERT statement is rolled back and returns an error because it attempts 
+to insert a row for department number 30, which could not be selected using the ACCOUNTS_STAFF view: 
+
+INSERT INTO Accounts_staff VALUES (111, 'KANC', 30); 
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation : Creating FORCE VIEWS  
+-------------------------------------------------------------------------------------------------------------------------------
+
+A view can be created even if the defining query of the view cannot be executed, 
+as long as the CREATE VIEW command has no syntax errors. We call such a view a view with errors. 
+
+For example, if a view refers to a non-existent table or an invalid column of an existing table, 
+or if the owner of the view does not have the required privileges, then the view can still be created 
+and entered into the data dictionary. 
+
+You can only create a view with errors by using the FORCE option of the CREATE VIEW command: 
+
+CREATE FORCE VIEW fv as select * from first; 
+
+DROP TABLE first;
+
+CREATE TABLE  FIRST
+(
+	COL1 NUMBER
+);
+
+
+INSERT INTO FIRST VALUES(1);
+
+INSERT INTO FIRST VALUES(2);
+
+INSERT INTO FIRST VALUES(NULL);
+
+INSERT INTO FIRST VALUES(3);
+
+INSERT INTO FIRST VALUES(4);
+
+INSERT INTO FIRST VALUES(5);
+
+INSERT INTO FIRST VALUES(NULL);
+
+
+select * from fv compile;
+
+
+When a view is created with errors, Oracle returns a message and leaves the status of the view as INVALID. 
+If conditions later change so that the query of an invalid view can be executed, then the view can be 
+recompiled and become valid. Oracle dynamically compiles the invalid view if you attempt to use it.  
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation : Replacing/Altering Views  
+-------------------------------------------------------------------------------------------------------------------------------
+
+To alter the definition of a view, you must replace the view using one of the following methods: 
+
+•	A view can be dropped and then re-created. When a view is dropped, all grants of 
+	corresponding view privileges are revoked from roles and users. After the view 	is re-created, 
+	necessary privileges must be regranted. 
+
+•	A view can be replaced by redefining it with a CREATEVIEW statement that contains the OR REPLACE option. 
+	This option replaces the current definition of a view, 	but preserves the present security authorizations. 
+
+For example, assume that you create the ACCOUNTS_STAFF view, as given in a previous example. 
+You also grant several object privileges to roles and other users. 
+However, now you realize that you must redefine the ACCOUNTS_STAFF view 
+to correct the department number specified in the WHERE clause of the defining query,
+because it should have been 30. To preserve the grants of object privileges that you have made, 
+you can replace the current version of the ACCOUNTS_STAFF view with the following statement: 
+
+CREATE OR REPLACE VIEW Accounts_staff AS     
+SELECT 
+	Empno, 
+	Ename, 
+	Deptno     
+FROM 
+	Emp     
+WHERE 
+	Deptno = 30     
+	WITH CHECK OPTION CONSTRAINT ica_Accounts_cnst; 
+
+Replacing a view has the following effects: 
+
+
+•	Replacing a view replaces the view's definition in the data dictionary. 
+	All underlying objects referenced by the view are not affected. 
+•	If previously defined but not included in the new view definition, 
+	then the constraint associated with the WITHCHECKOPTION for a view's definition is dropped. 
+•	All views and PL/SQL program units dependent on a replaced view become invalid.
+
+With some restrictions, rows can be inserted into, updated in, or deleted from a base table using a view. 
+The following statement inserts a new row into the EMP table using the ACCOUNTS_STAFF view: 
+
+INSERT INTO Accounts_staff     VALUES (199, 'KANC', 30); 
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation : UPDATABLE Views  
+-------------------------------------------------------------------------------------------------------------------------------
+
+Restrictions on DML operations for views use the following criteria in the order listed: 
+
+1.	If a view is defined by a query that contains SET or DISTINCT operators, 
+	a GROUPBY clause, or a group function, then rows cannot be inserted into, updated in, 
+	or deleted from the base tables using the view. 
+
+2.	If a view is defined with WITHCHECK OPTION, then a row cannot be inserted into,
+	or updated in, the base table (using the view), if the view cannot select the row from the base table. 
+3.	If a NOTNULL column that does not have a DEFAULT clause is omitted from the view, 
+	then a row cannot be inserted into the base table using the view. 
+4.	If the view was created by using an expression, such as DECODE(deptno, 10, "SALES", ...), 
+	then rows cannot be inserted into or updated in the base table using the view. 
+
+The constraint created by WITH CHECK OPTION of the ACCOUNTS_STAFF view only allows rows that have a 
+department number of 10 to be inserted into, or updated in, the EMP table. Alternatively, 
+assume that the ACCOUNTS_STAFF view is defined by the following statement (that is, excluding the DEPTNO column):
+ 
+CREATE VIEW Accounts_staff AS
+     SELECT Empno, Ename     
+FROM Emp     WHERE Deptno = 10     
+WITH CHECK OPTION CONSTRAINT ica_Accounts_cnst; 
+
+Considering this view definition, you can update the EMPNO or ENAME fields of existing records, 
+but you cannot insert rows into the EMP table through the ACCOUNTS_STAFF view because the view does
+not let you alter the DEPTNO field. If you had defined a DEFAULT value of 10 on the DEPTNO field, then you could perform inserts. 
+
+If you don’t want any DML operations to be performed on views, create them WITH READ ONLY option. 
+Then no DML operations are allowed on views.
+ 
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation : Referencing Invalid Views   
+-------------------------------------------------------------------------------------------------------------------------------
+
+Referencing Invalid Views 
+
+When a user attempts to reference an invalid view, Oracle returns an error message to the user:
+ 
+ORA-04063: view 'view_name' has errors 
+
+This error message is returned when a view exists but is unusable due to errors in its query 
+(whether it had errors when originally created or it was created successfully but became unusable 
+later because underlying objects were altered or dropped). 
+
+ 
+-------------------------------------------------------------------------------------------------------------------------------
+View creation :Modifying a Join View 
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE dept (
+      deptno        NUMBER(4) PRIMARY KEY,
+      dname         VARCHAR2(14),
+      loc           VARCHAR2(13));
+-------------------------------------------------------------------------------------------------------------------------------
+CREATE TABLE emp (
+      empno        NUMBER(4) PRIMARY KEY,
+      ename        VARCHAR2(10),
+      job          VARCHAR2(9),
+      mgr          NUMBER(4),
+      sal          NUMBER(7,2),
+      comm         NUMBER(7,2),
+      deptno       NUMBER(2),
+      FOREIGN KEY (DEPTNO) REFERENCES DEPT(DEPTNO));
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+Oracle allows you, with some restrictions, to modify views that involve joins. Consider the following simple view:
+
+DROP VIEW Emp_view ;
+
+CREATE VIEW Emp_view AS    
+ SELECT Ename, Empno, deptno FROM Emp; 
+
+This view does not involve a join operation. If you issue the SQL statement: 
+
+UPDATE Emp_view 
+  SET Ename = 'MILLER_C' WHERE Empno = 7934;
+
+then the EMP base table that underlies the view changes, and employee 109's name changes from ASHI to SHAHRYAR in the EMP table. 
+
+-------------------------------------------------------------------------------------------------------------------------------
+Involves a join operation
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE VIEW emp_dept AS
+      SELECT emp.empno, emp.ename, emp.deptno, emp.sal, dept.dname, dept.loc
+      FROM emp, dept
+      WHERE emp.deptno = dept.deptno
+         AND dept.loc IN ('DALLAS', 'NEW YORK', 'BOSTON');
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+A modifiable join view is a view that contains more than one table in the top-level FROM clause of the SELECT statement, 
+and that does not contain any of the following: 
+	•DISTINCT operator 
+	•Aggregate functions: AVG, COUNT, GLB, MAX, MIN, STDDEV, SUM, or VARIANCE 
+	•Set operations: UNION, UNIONALL, INTERSECT, MINUS
+	•GROUP BY or HAVING clauses 
+	•ROWNUM pseudocolumn 
+
+Any UPDATE, INSERT, or DELETE statement on a join view can modify only one underlying base table. 
+
+The following example shows an UPDATE statement that successfully modifies the EMP_DEPT_VIEW view: 
+UPDATE Emp_dept_view 
+  SET Sal = Sal * 1.10
+ WHERE Deptno = 10; 
+
+The following UPDATE statement would be disallowed on the EMP_DEPT_VIEW view: 
+UPDATE Emp_dept_view 
+  SET Loc = 'BOM'   
+ WHERE Ename = 'SAMI'; 
+This statement fails with an ORA-01779 error ("cannot modify a column which maps to a non key-preserved table"),
+because it attempts to modify the underlying DEPT table, and the DEPT table is not key preserved in the EMP_DEPT view. 
+
+
+In general, all modifiable columns of a join view must map to columns of a key-preserved table. 
+If the view is defined using the WITH CHECK OPTION clause, then all join columns and all columns of repeated tables 
+are not modifiable. 
+
+So, for example, if the EMP_DEPT view were defined using WITH CHECK OPTION, then the following UPDATE statement would fail: 
+UPDATE Emp_dept_view   
+  SET Deptno = 10         
+WHERE Ename = 'SAMI'; 
+
+The statement fails because it is trying to update a join column. 
+
+----------------------------------------------------------------------------
+Deleting from a Join View 
+----------------------------------------------------------------------------
+
+You can delete from a join view provided there is one and only one key-preserved table in the join. 
+
+The following DELETE statement works on the EMP_DEPT view: 
+DELETE FROM Emp_dept_view    
+ WHERE Ename = 'SMITH'; 
+This DELETE statement on the EMP_DEPT view is legal because it can be translated to a DELETE operation on the base EMP table, 
+and because the EMP table is the only key-preserved table in the join. 
+
+In the following view, a DELETE operation cannot be performed on the view because both E1 and E2 are key-preserved tables: 
+CREATE VIEW emp_emp AS     
+  SELECT e1.Ename, e2.Empno, e1.Deptno       
+   FROM Emp e1, Emp e2       
+  WHERE e1.Empno = e2.Empno; 
+
+If a view is defined using the WITH CHECK OPTION clause and the key-preserved table is repeated, then rows cannot be deleted
+from such a view. For example: 
+CREATE VIEW Emp_mgr AS   
+  SELECT e1.Ename, e2.Ename Mname      
+  FROM Emp e1, Emp e2        
+   WHERE e1.mgr = e2.Empno            
+ WITH CHECK OPTION; 
+No deletion can be performed on this view because the view involves a self-join of the table that is key preserved. 
+
+--------------------------------------------------------------------
+Inserting into a Join View
+ -------------------------------------------------------------------
+
+The following INSERT statement on the EMP_DEPT view succeeds, because only 
+one key-preserved base table is being modified (EMP), and 40 is a valid DEPTNO 
+in the DEPT table (thus satisfying the FOREIGN KEY integrity constraint on the EMP table). 
+
+INSERT INTO Emp_dept (Ename, Empno, Deptno)     VALUES ('ASHU', 119, 40); 
+
+The following INSERT statement fails for the same reason: This UPDATE on the base 
+EMP table would fail: the FOREIGN KEY integrity constraint on the EMP table is violated. 
+
+INSERT INTO Emp_dept (Ename, Empno, Deptno)     VALUES ('ASHU', 110, 77); 
+
+The following INSERT statement fails with an ORA-01776 error ("cannot modify more than one base table through a view"). 
+
+INSERT INTO Emp_dept (Ename, Empno, Deptno)     VALUES (110, 'TANNU’, 'BOMBAY'); 
+
+An INSERT cannot, implicitly or explicitly, refer to columns of a non-key-preserved table. 
+If the join view is defined using the WITH CHECK OPTION clause, then you cannot perform an INSERT to it. 
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+Listing Information about VIEWS.
+ 
+To see how many views are there in your schema. Give the following query.
+ 
+Select * from user_views;
+ 
+ 
+--------------------------------------------------------------------------------------------------------------------------------------
+To see which columns are updatable in join views. 
+
+Data Dictionaries which shows which columns are updatable.
+ 
+
+
+View Name              		Description 
+
+USER_UPDATABLE_COLUMNS 		Shows all columns in all tables and views in the user's schema that are modifiable
+DBA_UPDATABLE_COLUMNS 		Shows all columns in all tables and views in the DBA schema that are modifiable 
+ALL_UPDATABLE_VIEWS 		Shows all columns in all tables and views that are modifiable 
+ 
+If you are in doubt whether a view is modifiable, then you can SELECT from the view USER_UPDATABLE_COLUMNS to see if it is.
+
+For example: 
+
+SELECT * FROM USER_UPDATABLE_COLUMNS WHERE TABLE_NAME = 'EMP_DEPT_VIEW';
+ 
+
+OWNER       TABLE_NAME    COLUMN_NAM      UPD 
+----------  ----------    ----------      --- 
+SCOTT       EMP_DEPT      EMPNO           NO       
+SCOTT       EMP_DEPT      ENAME           NO   
+SCOTT       EMP_DEPT      DEPTNO          NO 
+SCOTT       EMP_DEPT      DNAME           NO 
+SCOTT       EMP_DEPT      LOC             NO  
+
+5 rows selected.
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+View creation :Dropping Views 
+-------------------------------------------------------------------------------------------------------------------------------
+
+Use the SQL command DROP VIEW to drop a view. For example: 
+
+DROP VIEW Accounts_staff; 

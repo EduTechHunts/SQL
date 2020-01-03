@@ -1,0 +1,472 @@
+=====================================================================================================================
+Examples : Materialized Views 
+=====================================================================================================================
+
+drop table t;
+drop table t2;
+
+
+drop table t_backup ;
+drop table t2_backup ;
+
+create table t(
+		key  number  primary key,
+		val  varchar2(5)
+		) ;
+
+insert into t values (1,'a') ;
+insert into t values (2,'b') ;
+insert into t values (3,'c') ;
+insert into t values (4,'') ;
+
+commit;
+
+create table t_backup as
+  select * from t;
+
+create table t2(
+		key    number  primary key,
+		t_key  number  not null references t,
+		amt    number  not null
+		) ;
+
+insert into t2 values ( 10, 1, 100 ) ;
+insert into t2 values ( 20, 1, 300 ) ;
+insert into t2 values ( 30, 1, 200 ) ;
+insert into t2 values ( 40, 2, 250 ) ;
+insert into t2 values ( 50, 2, 150 ) ;
+commit;
+
+create table t2_backup as
+  select * from t2;
+
+------------------------------------------------------------------------------------------------------------------------
+Example : Table, view and Materialize view
+------------------------------------------------------------------------------------------------------------------------
+
+select * from T ;
+
+       KEY VAL
+---------- -----
+         1 a
+         2 b
+         3 c
+         4
+
+create or replace view v
+as
+select *
+from   t ;
+
+select * from V ;
+
+       KEY VAL
+---------- -----
+         1 a
+         2 b
+         3 c
+         4
+ 
+GRANT CREATE MATERIALIZED VIEW TO scott;
+GRANT CREATE DATABASE LINK     TO scott;
+
+drop materialized view mv;
+
+create materialized view mv
+as
+select *
+from   t ;
+
+select * from MV ;
+
+       KEY VAL
+---------- -----
+         1 a
+         2 b
+         3 c
+         4
+
+------------------------------------------------------------------------------------------------------------------------
+Example : Table, view and Materialize view (ROWID)
+------------------------------------------------------------------------------------------------------------------------ 
+select rowid
+from T
+order by rowid ;
+
+ROWID
+------------------
+AAAgY9AAEAAAAVfAAA
+AAAgY9AAEAAAAVfAAB
+AAAgY9AAEAAAAVfAAC
+AAAgY9AAEAAAAVfAAD
+ 
+select rowid
+from V
+order by rowid ;
+
+ROWID
+------------------
+AAAgY9AAEAAAAVfAAA
+AAAgY9AAEAAAAVfAAB
+AAAgY9AAEAAAAVfAAC
+AAAgY9AAEAAAAVfAAD
+ 
+
+select rowid
+from MV
+order by rowid ;
+
+ROWID
+------------------
+AAAgZFAAEAAADyEAAA
+AAAgZFAAEAAADyEAAB
+AAAgZFAAEAAADyEAAC
+AAAgZFAAEAAADyEAAD
+ 
+
+------------------------------------------------------------------------------------------------------------------------
+Example : execute dbms_mview.refresh( 'MV' );
+------------------------------------------------------------------------------------------------------------------------
+
+update t set val = upper(val);
+
+
+select * from T ;
+
+       KEY VAL
+---------- -----
+         1 A
+         2 B
+         3 C
+         4
+ 
+
+	
+
+select * from V ;
+
+       KEY VAL
+---------- -----
+         1 A
+         2 B
+         3 C
+         4
+ 
+
+	
+
+select * from MV ;
+
+       KEY VAL
+---------- -----
+         1 a
+         2 b
+         3 c
+         4
+
+-------------------------------------------------------------------------------------------------------------------
+execute dbms_mview.refresh( 'MV' );
+-------------------------------------------------------------------------------------------------------------------
+
+select * from T ;
+
+       KEY VAL
+---------- -----
+         1 A
+         2 B
+         3 C
+         4
+
+select * from V ;
+
+       KEY VAL
+---------- -----
+         1 A
+         2 B
+         3 C
+         4
+
+select * from MV ;
+
+       KEY VAL
+---------- -----
+         1 A
+         2 B
+         3 C
+         4
+ 
+-------------------------------------------------------------------------------------------------------------------
+Clean up
+-------------------------------------------------------------------------------------------------------------------
+
+
+
+drop materialized view mv ;
+
+drop view v ;
+
+update t set val = lower(val);
+commit;
+
+-------------------------------------------------------------------------------------------------------------------
+Materialized Views : REFRESH COMPLETE
+-------------------------------------------------------------------------------------------------------------------
+
+create materialized view mv
+  REFRESH COMPLETE
+  as select * from t
+;
+
+select key, val, rowid from mv ;
+
+
+       KEY VAL   ROWID
+---------- ----- ------------------
+         1 a     AAAWgHAAEAAAAIEAAA
+         2 b     AAAWgHAAEAAAAIEAAB
+         3 c     AAAWgHAAEAAAAIEAAC
+         4       AAAWgHAAEAAAAIEAAD
+ 
+
+execute DBMS_MVIEW.REFRESH( LIST => 'MV', METHOD => 'C' );
+ 
+
+select key, val, rowid from mv ;
+ 
+
+       KEY VAL   ROWID
+---------- ----- ------------------
+         1 a     AAAWgHAAEAAAAIEAAE
+         2 b     AAAWgHAAEAAAAIEAAF
+         3 c     AAAWgHAAEAAAAIEAAG
+         4       AAAWgHAAEAAAAIEAAH
+------------------
+
+
+------------------------------------------------------------------------------------------------------------------------------
+Materialized View Logs
+------------------------------------------------------------------------------------------------------------------------------
+
+create materialized view log on t ;
+
+
+Note : How the materialized view log is not given a name. This is because a table can only ever
+have one materialized view log related to it at a time, so a name is not required. 
+
+LOG table look like
+
+describe MLOG$_T
+
+ Name                                         Null?    Type
+ -------------------------------------------- -------- ------------------------------
+ KEY                                                   NUMBER
+ SNAPTIME$$                                            DATE
+ DMLTYPE$$                                             VARCHAR2(1)
+ OLD_NEW$$                                             VARCHAR2(1)
+ CHANGE_VECTOR$$                                       RAW(255)
+
+
+UPDATE t set val = upper( val ) where KEY = 1 ;
+
+INSERT into t ( KEY, val ) values ( 5, 'e' );
+
+
+select key, dmltype$$ from MLOG$_T ;
+ 
+
+       KEY DMLTYPE$$
+---------- ----------
+         1 U
+         5 I
+
+
+********  If the changes affecting T are rolled back, so are the changes to MLOG$_T.
+
+rollback ;
+
+Rollback complete.
+
+
+select key, dmltype$$ from MLOG$_T ;
+
+no rows selected
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+Materialized View Logs : WITH PRIMARY KEY ( Default )
+------------------------------------------------------------------------------------------------------------------------------
+
+drop materialized view log on t ;
+
+create materialized view log on t WITH PRIMARY KEY ;
+
+
+desc mlog$_t
+ Name                                         Null?    Type
+ -------------------------------------------- -------- ------------------------------
+ KEY                                                   NUMBER
+ SNAPTIME$$                                            DATE
+ DMLTYPE$$                                             VARCHAR2(1)
+ OLD_NEW$$                                             VARCHAR2(1)
+ CHANGE_VECTOR$$                                       RAW(255)
+
+ 
+
+Note how MLOG$_T contains T's primary key column, T.KEY. This materialized view log is equivalent to 
+the one created earlier in this topic, which did not have a WITH clause, because WITH PRIMARY KEY 
+is the default option when no WITH clause is specified. 
+
+
+
+------------------------------------------------------------------------------------------------------------------------------
+Materialized View Logs : ROWID
+------------------------------------------------------------------------------------------------------------------------------
+
+drop materialized view log on t ;
+
+create materialized view log on t WITH ROWID ;
+
+desc mlog$_t
+ Name                                         Null?    Type
+ -------------------------------------------- -------- ------------------------------
+ M_ROW$$                                               VARCHAR2(255)
+ SNAPTIME$$                                            DATE
+ DMLTYPE$$                                             VARCHAR2(1)
+ OLD_NEW$$                                             VARCHAR2(1)
+ CHANGE_VECTOR$$                                       RAW(255)
+
+Note : how the KEY column was replaced by the M_ROW$$ column, which contains rowids from table T.
+
+A materialized view log can also be created with both a rowid and a primary key column.
+
+
+------------------------------------------------------------------------------------------------------------------------------
+Materialized View Logs : WITH ROWID, PRIMARY KEY
+------------------------------------------------------------------------------------------------------------------------------
+
+drop materialized view log on t ;
+
+create materialized view log on t WITH ROWID, PRIMARY KEY ;
+
+desc mlog$_t
+ Name                                         Null?    Type
+ -------------------------------------------- -------- ------------------------------
+ KEY                                                   NUMBER
+ M_ROW$$                                               VARCHAR2(255)
+ SNAPTIME$$                                            DATE
+ DMLTYPE$$                                             VARCHAR2(1)
+ OLD_NEW$$                                             VARCHAR2(1)
+ CHANGE_VECTOR$$                                       RAW(255)
+
+ 
+In this case both KEY and M_ROW$$ appear in the log table.
+In this case both KEY and M_ROW$$ appear in the log table. 
+
+In replication environments, the materialized views commonly created are primary key, rowid, and subquery materialized views.
+
+Primary Key Materialized Views
+
+The following statement creates the primary-key materialized view on the table emp located on a remote database.
+
+SQL> 	CREATE MATERIALIZED VIEW mv_emp_pk
+   	REFRESH FAST START WITH SYSDATE 
+	NEXT  SYSDATE + 1/48
+	WITH PRIMARY KEY 
+	AS SELECT * FROM emp@remote_db;
+
+Materialized view created.
+
+Note: When you create a materialized view using the FAST option you will need to create a view log on the master tables(s) as shown below:
+
+SQL> CREATE MATERIALIZED VIEW LOG ON emp;
+Materialized view log created.
+
+Rowid Materialized Views
+
+The following statement creates the rowid materialized view on table emp located on a remote database:
+
+SQL> 	CREATE MATERIALIZED VIEW mv_emp_rowid 
+	REFRESH WITH ROWID 
+   	AS SELECT * FROM emp@remote_db; 
+
+Materialized view log created.
+
+Subquery Materialized Views
+
+The following statement creates a subquery materialized view based on the emp and dept tables located on the remote database:
+
+SQL> CREATE MATERIALIZED VIEW  mv_empdept
+AS SELECT * FROM emp@remote_db e
+WHERE EXISTS
+     (SELECT * FROM dept@remote_db d
+     WHERE e.dept_no = d.dept_no)
+
+
+REFRESH CLAUSE
+
+[refresh [fast|complete|force]
+	[on demand | commit]
+	[start with date] [next date]
+	[with {primary key|rowid}]]
+
+The refresh option specifies:
+
+    The refresh method used by Oracle to refresh data in materialized view
+    Whether the view is primary key based or row-id based
+    The time and interval at which the view is to be refreshed
+
+Refresh Method - FAST Clause
+
+The FAST refreshes use the materialized view logs (as seen above) to send the rows that have changed from master tables to the materialized view.
+
+You should create a materialized view log for the master tables if you specify the REFRESH FAST clause.
+
+SQL> CREATE MATERIALIZED VIEW LOG ON emp;
+
+Materialized view log created.
+
+ 
+
+Materialized views are not eligible for fast refresh if the defined subquery contains an analytic function.
+
+Refresh Method - COMPLETE Clause
+
+The complete refresh re-creates the entire materialized view. If you request a complete refresh, Oracle performs a complete refresh even if a fast refresh is possible.
+
+Refresh Method - FORCE Clause
+
+When you specify a FORCE clause, Oracle will perform a fast refresh if one is possible or a complete refresh otherwise. If you do not specify a refresh method (FAST, COMPLETE, or FORCE), FORCE is the default.
+
+PRIMARY KEY and ROWID Clause
+
+WITH PRIMARY KEY is used to create a primary key materialized view i.e. the materialized view is based on the primary key of the master table instead of ROWID (for ROWID clause). PRIMARY KEY is the default option. To use the PRIMARY KEY clause you should have defined PRIMARY KEY on the master table or else you should use ROWID based materialized views.
+
+Primary key materialized views allow materialized view master tables to be reorganized without affecting the eligibility of the materialized view for fast refresh.
+
+Rowid materialized views should have a single master table and cannot contain any of the following:
+
+    Distinct or aggregate functions
+    GROUP BY Subqueries , Joins & Set operations
+
+Timing the refresh
+
+The START WITH clause tells the database when to perform the first replication from the master table to the local base table. It should evaluate to a future point in time. The NEXT clause specifies the interval between refreshes
+
+SQL> 	CREATE MATERIALIZED VIEW mv_emp_pk
+   	REFRESH FAST 
+	START WITH SYSDATE 
+	NEXT  SYSDATE + 2
+	WITH PRIMARY KEY 
+	AS SELECT * FROM emp@remote_db;
+
+Materialized view created.
+
+In the above example, the first copy of the materialized view is made at SYSDATE and the interval at which the refresh has to be performed is every two days.
+Summary
+
+Materialized Views thus offer us flexibility of basing a view on Primary key or ROWID, specifying refresh methods and specifying time of automatic refreshes.
+
+
+
+http://www.sqlsnippets.com/en/topic-12878.html

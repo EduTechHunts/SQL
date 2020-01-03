@@ -1,0 +1,189 @@
+============================================================================================================================
+The Left out
+============================================================================================================================
+
+----------------------------------------------------------------------------------------------------------------------------
+Function : NULLIF
+----------------------------------------------------------------------------------------------------------------------------
+
+The NULLIF function takes two arguments. If the two arguments are equal, then NULL is returned. 
+Otherwise, the first argument is returned. The syntax for NULLIF is as follows:
+
+Syntad : NULLIF ("expression 1", "expressions 2")
+
+OR
+
+SELECT CASE ("column_name")
+  WHEN "expression 1 = expression 2 " THEN "NULL"
+  [ELSE "expression 1"]
+  END
+FROM "table_name";
+
+
+----------------------------------------------------------------------------------------------------------------------------
+Function : Coalesce Function
+----------------------------------------------------------------------------------------------------------------------------
+
+The COALESCE function in SQL returns the first non-NULL expression among its arguments.
+
+COALESCE ("expression 1", "expressions 2", ...)
+
+OR
+
+SELECT CASE ("column_name")
+  WHEN "expression 1 is not NULL" THEN "expression 1"
+  WHEN "expression 2 is not NULL" THEN "expression 2"
+  ...
+  [ELSE "NULL"]
+  END
+FROM "table_name";
+
+Example :
+---------
+SELECT Name, COALESCE (Business_Phone, Cell_Phone, Home_Phone) Contact_Phone FROM Contact_Info;
+
+
+
+============================================================================================================================
+JOIN : Self Join
+============================================================================================================================
+
+A self join is a join in which a table is joined with itself. 
+----------------------------------------------------------------------------------------------------------------------------
+Example : 1
+----------------------------------------------------------------------------------------------------------------------------
+For example, when you require details about an employee and his manager (also an employee).
+
+select * from emp;
+
+select * from emp order by mgr;
+
+SELECT 
+	e1.ename||' works for '||e2.ename "Employees and their Managers" 
+FROM  
+	emp e1, 
+	emp e2
+WHERE 
+	e1.mgr = e2.empno;
+
+
+
+SELECT 
+	e1.ename||' Manager for '||e2.ename "Employees and their Managers" 
+FROM  
+	emp e1, 
+	emp e2
+WHERE 
+	e1.empno = e2.mgr;
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+Example : 2
+----------------------------------------------------------------------------------------------------------------------------
+
+
+Consider the following two tables, (a) CUSTOMERS table is as follows:
+
++----+----------+-----+-----------+----------+
+| ID | NAME     | AGE | ADDRESS   | SALARY   |
++----+----------+-----+-----------+----------+
+|  1 | Ramesh   |  32 | Ahmedabad |  2000.00 |
+|  2 | Khilan   |  25 | Delhi     |  1500.00 |
+|  3 | kaushik  |  23 | Kota      |  2000.00 |
+|  4 | Chaitali |  25 | Mumbai    |  6500.00 |
+|  5 | Hardik   |  27 | Bhopal    |  8500.00 |
+|  6 | Komal    |  22 | MP        |  4500.00 |
+|  7 | Muffy    |  24 | Indore    | 10000.00 |
++----+----------+-----+-----------+----------+
+
+Now, let us join this table using SELF JOIN as follows:
+
+SELECT  
+	a.ID, 
+	b.NAME, 
+	a.SALARY
+FROM 
+	CUSTOMERS a, 
+	CUSTOMERS b
+WHERE 
+	a.SALARY < b.SALARY;
+
+This would produce the following result:
+
++----+----------+---------+
+| ID | NAME     | SALARY  |
++----+----------+---------+
+|  2 | Ramesh   | 1500.00 |
+|  2 | kaushik  | 1500.00 |
+|  1 | Chaitali | 2000.00 |
+|  2 | Chaitali | 1500.00 |
+|  3 | Chaitali | 2000.00 |
+|  6 | Chaitali | 4500.00 |
+|  1 | Hardik   | 2000.00 |
+|  2 | Hardik   | 1500.00 |
+|  3 | Hardik   | 2000.00 |
+|  4 | Hardik   | 6500.00 |
+|  6 | Hardik   | 4500.00 |
+|  1 | Komal    | 2000.00 |
+|  2 | Komal    | 1500.00 |
+|  3 | Komal    | 2000.00 |
+|  1 | Muffy    | 2000.00 |
+|  2 | Muffy    | 1500.00 |
+|  3 | Muffy    | 2000.00 |
+|  4 | Muffy    | 6500.00 |
+|  5 | Muffy    | 8500.00 |
+|  6 | Muffy    | 4500.00 |
++----+----------+---------+
+
+
+
+
+
+
+============================================================================================================================
+GROUP BY : ROLLUP and CUBE
+============================================================================================================================
+
+select 
+	deptno, 
+	count(*) 
+from 
+	emp 
+GROUP by 
+	deptno;
+
+----------------------------------------------------------------------------------------------------------------------------
+Passing a Single Column to ROLLUP
+----------------------------------------------------------------------------------------------------------------------------
+
+select 
+	deptno, 
+	count(*) 
+from 
+	emp 
+GROUP by rollup (deptno);
+
+----------------------------------------------------------------------------------------------------------------------------
+Passing Single/Multiple Columns to CUBE
+----------------------------------------------------------------------------------------------------------------------------
+
+
+select 
+	job
+	count(*) 
+from 
+	emp 
+GROUP by cube (job);
+
+
+select 
+	deptno,
+	job,
+	count(*) 
+from 
+	emp 
+GROUP by cube (deptno,job);
+
+
+

@@ -1,0 +1,331 @@
+=====================================================================================
+Contents
+
+    Definition
+    Simple subquery
+    Correlated subquery
+    Update with correlated subquery
+    Delete with correlated subquery
+=====================================================================================
+
+
+Definition
+
+A subquery is basically a select clause which is used instead of another statement.
+
+For example : Have a look at the following 2 tables : DEPT and EMP
+
+
+
+SQL> select * from dept order by deptno;
+
+    DEPTNO DNAME          LOC
+---------- -------------- -------------
+        10 ACCOUNTING     NEW YORK
+        20 RESEARCH       DALLAS
+        30 SALES          CHICAGO
+        40 OPERATIONS     BOSTON
+
+
+SQL> select empno,ename,job,sal,deptno from emp;
+
+     EMPNO ENAME      JOB              SAL     DEPTNO
+---------- ---------- --------- ---------- ----------
+      7369 SMITH      CLERK            800         20
+      7499 ALLEN      SALESMAN        1600         30
+      7521 WARD       SALESMAN        1250         30
+      7566 JONES      MANAGER         2975         20
+      7654 MARTIN     SALESMAN        1250         30
+      7698 BLAKE      MANAGER         2850         30
+      7782 CLARK      MANAGER         2450         10
+      7788 SCOTT      ANALYST         3000         20
+      7839 KING       PRESIDENT       5000         10
+      7844 TURNER     SALESMAN        1500         30
+      7876 ADAMS      CLERK           1100         20
+      7900 JAMES      CLERK            950         30
+      7902 FORD       ANALYST         3000         20
+      7934 MILLER     CLERK           1300         10
+
+14 rows selected.
+
+
+=====================================================================================
+Simple Oracle subquery
+=====================================================================================
+
+
+A simple subquery is evaluated once for each table.
+
+You would like to select all employees whose department is located in Chicago.
+
+A join would be a better solution for this select,
+but for the purposes of illustration we will use a subquery.
+
+
+
+SQL> select empno,ename,job,sal,deptno from emp where
+     deptno in (select deptno from dept 
+	 where loc = 'CHICAGO');
+
+     EMPNO ENAME      JOB              SAL     DEPTNO
+---------- ---------- --------- ---------- ----------
+      7900 JAMES      CLERK            950         30
+      7844 TURNER     SALESMAN        1500         30
+      7698 BLAKE      MANAGER         2850         30
+      7654 MARTIN     SALESMAN        1250         30
+      7521 WARD       SALESMAN        1250         30
+      7499 ALLEN      SALESMAN        1600         30
+
+6 rows selected.
+
+
+
+=====================================================================================
+Subquries in FROM CLAUSE (Inline View )
+=====================================================================================
+
+You can use a subquery in the place of a table name in the 'from' clause.
+
+
+
+SQL> Select 
+	ename, 
+	deptno 
+     from
+     	(select ename, deptno from emp where job = 'CLERK' )
+     where
+     	deptno > 20;
+
+ENAME          DEPTNO
+---------- ----------
+JAMES              30
+
+
+
+
+=====================================================================================
+Scalar Subquries
+=====================================================================================
+
+You can even replace a column name with a subquery:
+
+
+SQL> select ename, (select max(sal) from emp) "maxsal" , sal, ((select max(sal) from emp ) - sal ) "difference"  from emp;
+
+ENAME          maxsal        SAL difference
+---------- ---------- ---------- ----------
+SMITH            5000        800       4200
+ALLEN            5000       1600       3400
+WARD             5000       1250       3750
+JONES            5000       2975       2025
+MARTIN           5000       1250       3750
+BLAKE            5000       2850       2150
+CLARK            5000       2450       2550
+SCOTT            5000       3000       2000
+KING             5000       5000          0
+TURNER           5000       1500       3500
+ADAMS            5000       1100       3900
+JAMES            5000        950       4050
+FORD             5000       3000       2000
+MILLER           5000       1300       3700
+
+14 rows selected.
+
+
+
+
+=====================================================================================
+Multiple Row Sub Query
+=====================================================================================
+
+
+Multiple-row subqueries are nested queries that can return more than one row of results to the parent query. 
+Multiple-row subqueries are used most commonly in WHERE and HAVING clauses. Since it returns multiple rows,
+it must be handled by set comparison operators (IN, ALL, ANY).
+
+While IN operator holds the same meaning as discussed in earlier chapter,
+ANY operator compares a specified value to each value returned by the sub query 
+while ALL compares a value to every value returned by a sub query.
+
+Below query shows the error when single row sub query returns multiple rows.
+
+SELECT	first_name, department_id
+FROM employees
+WHERE department_id = (SELECT department_id
+			FROM employees
+			WHERE LOCATION_ID = 100)
+department_id = (select
+               *
+ERROR at line 4:
+ORA-01427: single-row subquery returns more than one row 
+
+--------------------------------------------------------------------------------------
+Usage of Multiple Row operators
+--------------------------------------------------------------------------------------
+
+Usage of Multiple Row operators
+
+    [> ALL] More than the highest value returned by the subquery
+
+    [< ALL] Less than the lowest value returned by the subquery
+
+    [< ANY] Less than the highest value returned by the subquery
+
+    [> ANY] More than the lowest value returned by the subquery
+
+    [= ANY] Equal to any value returned by the subquery (same as IN)
+
+Above SQL can be rewritten using IN operator like below.
+
+SELECT	first_name, department_id
+FROM employees
+WHERE department_id IN (SELECT department_id
+                   	    FROM departments
+                   	    WHERE LOCATION_ID = 100)
+
+Note in the above query, IN matches department ids returned from the sub query,
+compares it with that in the main query and returns employee's name who satisfy the condition.
+
+A join would be better solution for above query, but for purpose of illustration, sub query has been used in it.
+
+=====================================================================================
+Correlated Oracle subquery
+=====================================================================================
+
+As opposed to a regular subquery, where the outer query depends on values provided by the inner query,
+a correlated subquery is one where the inner query depends on values provided by the outer query. 
+
+This means that in a correlated subquery,the inner query is executed repeatedly, 
+once for each row that might be selected by the outer query.
+
+Correlated subqueries can produce result tables that answer complex management questions.
+
+Consider the below SELECT query. Unlike the subqueries previously considered,
+the subquery in this SELECT statement cannot be resolved independently of the main query.
+
+Notice that the outer query specifies that rows are selected from the employee table with an alias name of e1. 
+The inner query compares the employee department number column (DepartmentNumber) of the employee 
+table with alias e2 to the same column for the alias table name e1.
+
+SELECT EMPLOYEE_ID, salary, department_id
+FROM   employees E
+WHERE salary > (SELECT AVG(salary)
+                FROM   EMP T
+                WHERE E.department_id = T.department_id)
+
+-------------------------------------------------------------------------------------
+
+SQL> select ename ,sal ,deptno from emp a where
+     a.sal < (select avg(sal) from emp b 
+	           where a.deptno = b.deptno) 
+     order by deptno;
+
+ENAME             SAL     DEPTNO
+---------- ---------- ----------
+CLARK            2450         10
+MILLER           1300         10
+SMITH             800         20
+ADAMS            1100         20
+WARD             1250         30
+MARTIN           1250         30
+TURNER           1500         30
+JAMES             950         30
+
+8 rows selected.
+
+-------------------------------------------------------------------------------------------
+Using a correlated subquery in an update
+-------------------------------------------------------------------------------------------
+
+Let's give these people (whose salary is less than their department's average) a raise.
+
+
+SQL> select ename, sal, deptno  from emp 
+     order by deptno, ename;
+
+ENAME             SAL     DEPTNO
+---------- ---------- ----------
+CLARK            2450         10
+KING             5000         10
+MILLER           1300         10
+ADAMS            1100         20
+FORD             3000         20
+JONES            2975         20
+SCOTT            3000         20
+SMITH             800         20
+ALLEN            1600         30
+BLAKE            2850         30
+JAMES             950         30
+MARTIN           1250         30
+TURNER           1500         30
+WARD             1250         30
+
+14 rows selected.
+
+
+
+SQL>  UPDATE emp a 
+      set sal = (select avg(sal) 
+                from emp b 
+	        where 
+	        a.deptno = b.deptno)
+      where sal < 
+	   (select avg(sal) from emp c 
+	   where a.deptno = c.deptno);
+
+8 rows updated.
+
+SQL> select ename, sal, deptno  from emp 
+     order by deptno, ename;
+
+ENAME             SAL     DEPTNO
+---------- ---------- ----------
+CLARK         2916.67         10
+KING             5000         10
+MILLER        2916.67         10
+ADAMS            2175         20
+FORD             3000         20
+JONES            2975         20
+SCOTT            3000         20
+SMITH            2175         20
+ALLEN            1600         30
+BLAKE            2850         30
+JAMES         1566.67         30
+MARTIN        1566.67         30
+TURNER        1566.67         30
+WARD          1566.67         30
+
+14 rows selected.
+
+-------------------------------------------------------------------------------------------
+Using a correlated subquery in a delete
+-------------------------------------------------------------------------------------------
+
+Let's delete the highest earning employees in each department.
+
+SQL>  delete from emp a where
+      a.sal = (select max(sal) from emp b 
+	  where a.deptno = b.deptno);
+
+4 rows deleted.
+
+SQL> select ename, sal, deptno  from emp 
+     order by deptno, ename;
+
+ENAME             SAL     DEPTNO
+---------- ---------- ----------
+CLARK         2916.67         10
+MILLER        2916.67         10
+ADAMS            2175         20
+JONES            2975         20
+SMITH            2175         20
+ALLEN            1600         30
+JAMES         1566.67         30
+MARTIN        1566.67         30
+TURNER        1566.67         30
+WARD          1566.67         30
+
+10 rows selected.
+
+
+Lastly: do not forget to commit to make your changes permanent when using the oracle subquery statement. 

@@ -1,0 +1,134 @@
+DROP TABLE demo_const;
+DROP TABLE demo_const1;
+
+create table demo_const
+(
+ pk_col     number primary key
+ );
+ alter table demo_const1 add primary Key(pk_col);
+ 
+ insert into demo_const (pk_col) values(1);
+ -- insert into demo_const (pk_col) values(1); 
+ insert into demo_const (pk_col) values(2); 
+ insert into demo_const (pk_col) values(''); 
+ insert into demo_const (pk_col) values(null);
+ 
+ create table demo_const1
+(
+ pk_col     number,
+ sec_col    number
+ );
+ alter table demo_const1 add primary Key(pk_col,sec_col);
+ insert into demo_const1 (pk_col, sec_col)
+ values(1,2);
+-- insert into demo_const1 (pk_col, sec_col)
+-- values(null,2);
+--  insert into demo_const1 (pk_col, sec_col)
+-- values(null,null);
+---------------------------------------------------------------------------
+DROP TABLE demo_const;
+DROP TABLE demo_const1;
+
+create table demo_const
+(
+ pk_col     number UNIQUE
+ );
+  insert into demo_const (pk_col) values(1);
+  --insert into demo_const (pk_col) values(1);
+  insert into demo_const (pk_col) values(NULL);
+
+--------------------------------------------------------------------------
+DROP TABLE demo_const;
+
+create table demo_const
+(
+ pk_col     number NOT NULL
+ );
+
+  insert into demo_const (pk_col) values(1);
+  --insert into demo_const (pk_col) values(1);
+  insert into demo_const (pk_col) values(NULL);
+
+---------------------------------------------------------------------------
+DROP TABLE demo_const;
+
+create table demo_const
+(
+ myname varchar2(20),
+ pk_col number DEFAULT 10000
+ );
+  insert into demo_const (myname) values('Kanc');
+  insert into demo_const (pk_col) values(1);
+  --insert into demo_const (pk_col) values(1);
+  insert into demo_const (pk_col) values(NULL);
+  insert into demo_const (pk_col) values('');
+  INSERT INTO demo_const SELECT 100 FROM DUAL;
+
+---------------------------------------------------------------------------
+DROP TABLE demo_const;
+ 
+create table demo_const
+(
+ pk_col number
+ CHECK (PK_COL in (20,30))
+ -- CONSTRAINT check_con_demo  CHECK (PK_COL BETWEEN 10 and 99)
+ );
+  insert into demo_const (pk_col) values(1);
+  insert into demo_const (pk_col) values(2);
+  insert into demo_const (pk_col) values(3);
+  insert into demo_const (pk_col) values(20);
+
+---------------------------------------------------------------------------
+
+DROP TABLE demo_const;
+ 
+create table demo_const
+(
+ pk_col number
+ CHECK (PK_COL in (20,30))
+ );
+
+  insert into demo_const (pk_col) values(20);
+
+drop table demo_const;
+create table demo_const
+(
+ pk_col     number
+ );
+ 
+insert into demo_const (pk_col) values(1);
+insert into demo_const (pk_col) values(2);
+
+SAVEPOINT sv_12;
+update demo_const set pk_col = 11 where pk_col = 1;
+update demo_const set pk_col = 22 where pk_col = 2;
+
+SAVEPOINT sv_up_12;
+
+DELETE from  demo_const where pk_col = 11;
+DELETE from  demo_const where pk_col = 22;
+rollback to sv_up_12;
+rollback to sv_12;
+rollback;
+---------------------------------------------------------------------
+
+
+DROP TABLE demo_const;
+
+create table demo_const
+(
+ myname varchar2(20),
+ pk_col number DEFAULT 10000
+);
+  insert into demo_const (myname) values('Kanc1');
+  --insert into demo_const (pk_col) values(1);
+  select rownum, a.* from demo_const a 
+  where myname = 'Kanc1' ;
+    
+    select rownum, a.* from demo_const a  
+    where rownum > 5;
+      select rownum, a.* from demo_const a  
+    where rownum <= 5;
+
+  delete from demo_const where rowid ='AAASWgAAEAAAAJFAAB';
+

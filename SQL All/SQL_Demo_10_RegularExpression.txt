@@ -1,0 +1,181 @@
+=====================================================================================================================
+Examples : Regular Expression
+=====================================================================================================================
+
+---------------------------------------------------------------------------------------------------------------------
+Example : Letirals
+---------------------------------------------------------------------------------------------------------------------
+	
+Text litirals :  But, soft! What light through yonder window breaks?
+ 
+Number/Date   :  '1234' , 1234, '10-Jan-2015'
+
+
+---------------------------------------------------------------------------------------------------------------------
+Example : Metachracters
+---------------------------------------------------------------------------------------------------------------------
+
+^196[5-8]$, Here ^, [5-8] and $ are metacharacters.
+
+l[[:alpha:]]{4}, Here [[:alpha:]] and {4} are the metacharacters.
+
+---------------------------------------------------------------------------------------------------------------------
+Example : REGEXP_LIKE(x, pattern[, match_option])
+---------------------------------------------------------------------------------------------------------------------
+
+Searches x for the regular expression defined in the
+pattern parameter. You can also provide an optional
+match_option, which may be set to one of the following
+characters:
+
+*	'c', which specifies case-sensitive matching (this is the default)
+* 	'I', which specifies case-insensitive matching
+* 	'n', which allows you to use the match-any-character operator
+*	'm', which treats x as a multiple line
+
+
+
+SELECT customer_id, first_name, last_name, dob
+FROM   customers
+WHERE  REGEXP_LIKE(first_name, '^j', 'i');
+
+CUSTOMER_ID 	FIRST_NAME 	LAST_NAME 	DOB
+----------- 	---------- 	---------- 	---------
+1 		John 		Brown 		01-JAN-65
+
+
+---------------------------------------------------------------------------------------------------------------------
+Example : REGEXP_INSTR
+---------------------------------------------------------------------------------------------------------------------
+
+REGEXP_INSTR(x, pattern
+[, start
+[, occurrence
+[, return_option
+[, match_option
+[, subexp_option]]]])
+
+
+The next example uses the function to determine the starting position of the five-digit zip code pattern within a string.
+
+SELECT 
+	REGEXP_INSTR('NY 10032 USA','[[:digit:]]{5}') AS rx_instr
+FROM dual;
+
+RX_INSTR
+––––––––––
+4
+
+
+SELECT
+	REGEXP_INSTR('But, soft! What light through yonder window breaks?','l[[:alpha:]]{4}') AS result
+FROM dual;
+
+RESULT
+----------
+17
+
+
+SELECT
+	REGEXP_INSTR('But, soft! What light through yonder window softly breaks?','s[[:alpha:]]{3}', 1, 2) AS result
+FROM dual;
+
+RESULT
+----------
+45
+
+
+SELECT
+	REGEXP_INSTR('But, soft! What light through yonder window breaks?','o', 10, 2) AS result
+FROM dual;
+
+RESULT
+----------
+32
+
+
+---------------------------------------------------------------------------------------------------------------------
+Example : REGEXP_REPLACE
+---------------------------------------------------------------------------------------------------------------------
+
+REGEXP_REPLACE(x, pattern
+[, replace_string
+[, start
+[, occurrence
+[, match_option]]]])
+
+Searches x for the pattern and replaces it with replace_
+string. The other options have the same meaning as those
+shown earlier.
+
+SELECT
+	REGEXP_REPLACE('But, soft! What light through yonder window breaks?','l[[:alpha:]]{4}', 'sound') AS result
+FROM dual;
+
+RESULT
+---------------------------------------------------
+But, soft! What sound through yonder window breaks?
+
+Notice that light has been replaced by sound.
+
+
+---------------------------------------------------------------------------------------------------------------------
+Example : REGEXP_SUBSTR
+---------------------------------------------------------------------------------------------------------------------
+
+REGEXP_SUBSTR(x, pattern
+[, start
+[, occurrence
+[, match_option
+[, subexp_option]]]])
+
+Returns a substring of x that matches pattern; the search
+begins at the position specified by start. The other
+options have the same meaning as those shown earlier. The
+subexp_option (new for Oracle Database 11g) works in
+the same way as shown for REGEXP_INSTR().
+
+SELECT
+	REGEXP_SUBSTR('But, soft! What light through yonder window breaks?','l[[:alpha:]]{4}') AS result
+FROM dual;
+
+RESUL
+-----
+light
+
+
+SELECT REGEXP_SUBSTR('Joe Smith, 12345 Berry Lane, Orta, CA 91234','[[:digit:]]{5}$') AS substr FROM dual
+
+SUBST
+––––-
+91234
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------
+Example : REGEXP_COUNT
+---------------------------------------------------------------------------------------------------------------------
+
+REGEXP_COUNT(x, pattern
+[, start
+[, match_option]])
+
+SELECT
+	REGEXP_COUNT('But, soft! What light through yonder window softly breaks?','s[[:alpha:]]{3}') AS result
+FROM dual;
+
+RESULT
+----------
+2
+
+New for Oracle Database 11g. Searches in x for the pattern
+and returns the number of times the pattern is found in x.
+You can supply an optional:
+
+* 	start position to begin the search. The default is 1,
+	which is the first character in x.
+*	match_option to change the default matching. Works in
+	the same way as shown for REGEXP_LIKE().
+

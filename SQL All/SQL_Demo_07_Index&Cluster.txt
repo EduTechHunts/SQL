@@ -1,0 +1,222 @@
+============================================================================================================================
+Creating Indexes
+============================================================================================================================
+
+============================================================================================================================
+Creating an Index Explicitly
+============================================================================================================================
+
+CREATE INDEX emp_ename ON emp (ename)
+
+      TABLESPACE users
+      STORAGE (INITIAL 20K NEXT 20k);
+
+NOTE : If you do not specify storage options (such as INITIAL and NEXT) for an index, the default storage options 
+of the default or specified tablespace are automatically used.
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Creating a Unique Index Explicitly
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE UNIQUE INDEX dept_unique_index ON dept (dname)
+      TABLESPACE indx;
+
+NOTE : The database enforces UNIQUE integrity constraints by automatically defining a unique index on the unique key. 
+This is discussed in the following section. However, it is advisable that any index that exists 
+for query performance, including unique indexes, be created explicitly.
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Specifying the Index Associated with a Constraint
+-------------------------------------------------------------------------------------------------------------------------------
+Example 1:
+
+CREATE TABLE a (
+     a1 INT PRIMARY KEY USING INDEX (create index ai on a (a1)));
+
+Example 2:
+
+CREATE TABLE b(
+     b1 INT, 
+     b2 INT, 
+     CONSTRAINT bu1 UNIQUE (b1, b2) 
+                    USING INDEX (create unique index bi on b(b1, b2)),
+     CONSTRAINT bu2 UNIQUE (b2, b1) USING INDEX bi);
+
+Example 3:
+
+CREATE TABLE c(c1 INT, c2 INT);
+
+CREATE INDEX ci ON c (c1, c2);
+
+ALTER TABLE c ADD CONSTRAINT cpk PRIMARY KEY (c1) USING INDEX ci;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Creating an Index Online
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE INDEX emp_name ON emp (mgr, emp1, emp2, emp3) ONLINE;
+
+It is best to start online index builds when DML activity is low.
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Creating a Function-Based Index
+-------------------------------------------------------------------------------------------------------------------------------
+
+CREATE INDEX area_index ON rivers (area(geo));
+
+SELECT id, geo, area(geo), desc
+     FROM rivers     
+     WHERE Area(geo) >5000;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Rename an Index
+-------------------------------------------------------------------------------------------------------------------------------
+
+ALTER INDEX index_name
+  RENAME TO new_index_name;
+
+ALTER INDEX supplier_idx
+  RENAME TO supplier_index_name;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Collect Statistics on an Index
+-------------------------------------------------------------------------------------------------------------------------------
+
+ALTER INDEX index_name REBUILD COMPUTE STATISTICS;
+
+ALTER INDEX supplier_idx  REBUILD COMPUTE STATISTICS;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Drop an Index
+-------------------------------------------------------------------------------------------------------------------------------
+
+DROP INDEX supplier_idx;
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Dictionary Index
+-------------------------------------------------------------------------------------------------------------------------------
+
+Query the dictionary views USER_INDEXES, ALL_INDEXES, or DBA_INDEXES.
+
+
+
+
+============================================================================================================================
+Creating Cluster
+============================================================================================================================
+
+To create a cluster index, one of the following conditions must be true:
+
+*	Your schema contains the cluster.
+*	You have the CREATE ANY INDEX system privilege.
+*	UNLIMITED TABLESPACE system privilege.
+
+
+A cluster index must be created before any rows can be inserted into any clustered table.
+
+CREATE INDEX User_index_name
+   ON CLUSTER user_cluster_name
+   TABLESPACE users
+   STORAGE (INITIAL 50K
+      NEXT 50K
+      MINEXTENTS 2
+      MAXEXTENTS 10
+      PCTINCREASE 33);
+
+---------------------------------------------------------------------------------------------------------------------------
+
+To create clustered tables. First, create a cluster and create index on it. Then create tables in it.
+
+For example to create a cluster of EMP and DEPT tables in which the DEPTNO will be cluster key, 
+first create the cluster by typing the following command.
+
+Step 1 : Create a cluster
+
+	create cluster emp_dept (deptno number(2));
+ 
+Step 2 : Create index on cluster
+
+	create index on cluster emp_dept;
+
+Step 3 : create table in the cluster like this
+ 
+
+	create table dept (deptno number(2),
+
+                    name varchar2(20),
+
+                    loc varchar2(20))
+
+                    cluster emp_dept (deptno);
+
+ 
+	create table emp (empno number(5),
+
+            name varchar2(20),
+
+            sal number(10,2),
+
+            deptno number(2)) cluster emp_dept (deptno)      
+ 
+---------------------------------------------------------------------------------------------------------------------------
+Dropping Clusters : Empty Cluster
+---------------------------------------------------------------------------------------------------------------------------
+
+To drop a cluster use DROP CLUSTER statement. For example to drop the emp_dept cluster give the following command.
+
+Drop cluster emp_dept;
+
+This will drop the cluster, if the cluster is empty i.e. no tables are existing it it. 
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Dropping Clusters : Table available in Cluster
+---------------------------------------------------------------------------------------------------------------------------
+
+If tables are there in the cluster first drop the tables and then drop the cluster. 
+If you want to drop the cluster even when tables are there then give the following command.
+
+drop cluster emp_dept including tables;
+
+
+---------------------------------------------------------------------------------------------------------------------------
+Dropping Clusters : Listing Information about Clusters
+---------------------------------------------------------------------------------------------------------------------------
+
+To see how many clusters are there in your schema give the following statement.
+
+select * from user_clusters;
+
+To see which tables are part of a cluster. Give the following command.
+
+select * from tab;
+
+TABLE_NAME    TYPE      CLUSTER_ID
+
+----------    ----      -----------
+
+EMP           TABLE         1
+SALGRADE      TABLE        
+CUSTOMER      TABLE        
+DEPT          TABLE         1
+
+
+In the above example notice the CLUSTER_ID column, for EMP and DEPT table the cluster_id is 1.
+That means these tables are in cluster whose cluster_id is 1. 
+You can see the cluster_id’s name in USER_CLUSTERS table.
+
+
+---------------------------------------------------------------------------------------------------------------------------
+							THE END
+---------------------------------------------------------------------------------------------------------------------------
+
+
